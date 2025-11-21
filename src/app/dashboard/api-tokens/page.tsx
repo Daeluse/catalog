@@ -22,6 +22,27 @@ interface ApiToken {
   updatedAt: string
 }
 
+// CodeBlock component moved outside of render
+function CodeBlock({ code, id, copied, onCopy }: { code: string; id: string; copied: string | null; onCopy: (code: string, id: string) => void }) {
+  return (
+    <div className="relative">
+      <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+        <code>{code}</code>
+      </pre>
+      <button
+        onClick={() => onCopy(code, id)}
+        className="absolute top-2 right-2 p-2 bg-gray-800 hover:bg-gray-700 rounded text-gray-300 hover:text-white"
+      >
+        {copied === id ? (
+          <CheckCircle2 className="w-4 h-4" />
+        ) : (
+          <Copy className="w-4 h-4" />
+        )}
+      </button>
+    </div>
+  )
+}
+
 export default function ApiTokensPage() {
   const { session, isLoading: authLoading } = useRequireAuth()
   const [tokens, setTokens] = useState<ApiToken[]>([])
@@ -408,24 +429,6 @@ function ApiDocumentation() {
     setTimeout(() => setCopied(null), 2000)
   }
 
-  const CodeBlock = ({ code, id }: { code: string; id: string }) => (
-    <div className="relative">
-      <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
-        <code>{code}</code>
-      </pre>
-      <button
-        onClick={() => copyCode(code, id)}
-        className="absolute top-2 right-2 p-2 bg-gray-800 hover:bg-gray-700 rounded text-gray-300 hover:text-white"
-      >
-        {copied === id ? (
-          <CheckCircle2 className="w-4 h-4" />
-        ) : (
-          <Copy className="w-4 h-4" />
-        )}
-      </button>
-    </div>
-  )
-
   return (
     <div className="space-y-8">
       <Card>
@@ -444,6 +447,8 @@ function ApiDocumentation() {
             <CodeBlock
               id="auth"
               code={`Authorization: Bearer YOUR_API_TOKEN`}
+              copied={copied}
+              onCopy={copyCode}
             />
           </section>
 
@@ -483,6 +488,8 @@ function ApiDocumentation() {
     "license": "MIT",
     "keywords": ["react", "component"]
   }'`}
+              copied={copied}
+              onCopy={copyCode}
             />
           </section>
 
@@ -507,6 +514,8 @@ function ApiDocumentation() {
   -F "manifest=@dist/mf-manifest.json" \\
   -F "stats=@dist/mf-stats.json" \\
   -F "types=@dist/types.d.ts"`}
+              copied={copied}
+              onCopy={copyCode}
             />
           </section>
 
@@ -545,6 +554,8 @@ async function publishVersion() {
 }
 
 publishVersion();`}
+              copied={copied}
+              onCopy={copyCode}
             />
           </section>
 
@@ -593,6 +604,8 @@ jobs:
             -F "remoteEntry=@dist/remoteEntry.js" \\
             -F "manifest=@dist/mf-manifest.json" \\
             -F "stats=@dist/mf-stats.json"`}
+              copied={copied}
+              onCopy={copyCode}
             />
           </section>
 

@@ -77,7 +77,7 @@ export const testData = {
   /**
    * Create a test module
    */
-  createModule(overrides: Record<string, any> = {}) {
+  createModule(overrides: Record<string, unknown> = {}) {
     return {
       name: '@test/module',
       displayName: 'Test Module',
@@ -101,7 +101,7 @@ export const testData = {
   /**
    * Create a test version
    */
-  createVersion(overrides: Record<string, any> = {}) {
+  createVersion(overrides: Record<string, unknown> = {}) {
     return {
       moduleId: 'test-module-id',
       moduleName: '@test/module',
@@ -144,7 +144,7 @@ export const testData = {
   /**
    * Create a test application
    */
-  createApplication(overrides: Record<string, any> = {}) {
+  createApplication(overrides: Record<string, unknown> = {}) {
     return {
       name: 'Test Application',
       description: 'A test application',
@@ -163,7 +163,7 @@ export const testData = {
   /**
    * Create a test subscription
    */
-  createSubscription(overrides: Record<string, any> = {}) {
+  createSubscription(overrides: Record<string, unknown> = {}) {
     return {
       applicationId: 'test-app-id',
       moduleId: 'test-module-id',
@@ -182,7 +182,7 @@ export const testData = {
   /**
    * Create a test API token
    */
-  createApiToken(overrides: Record<string, any> = {}) {
+  createApiToken(overrides: Record<string, unknown> = {}) {
     return {
       name: 'Test API Token',
       tokenHash: '$2a$10$abcdefghijklmnopqrstuv', // Bcrypt hash

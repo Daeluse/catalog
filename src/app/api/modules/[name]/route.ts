@@ -9,7 +9,7 @@ import {
   serverErrorResponse,
 } from '@/lib/api-responses'
 import { checkModulePermission } from '@/lib/permissions'
-import { ModuleDocument, ModuleUpdates, VersionDocument } from '@/types/database'
+import { ModuleDocument, ModuleUpdates } from '@/types/database'
 
 // GET /api/modules/[name] - Get module details (public)
 export async function GET(
@@ -19,13 +19,13 @@ export async function GET(
   try {
     const { name } = await params
 
-    const module = await db.modules.findOne({ name })
+    const moduleDoc = await db.modules.findOne({ name })
 
     if (!module) {
       return notFoundResponse('Module')
     }
 
-    return successResponse(module)
+    return successResponse(moduleDoc)
   } catch (error) {
     console.error('Error fetching module:', error)
     return serverErrorResponse('Failed to fetch module')
@@ -46,7 +46,7 @@ export async function PATCH(
     const { name } = await params
     const body = await request.json()
 
-    const module = await db.modules.findOne({ name })
+    const moduleDoc = await db.modules.findOne({ name })
 
     if (!module) {
       return notFoundResponse('Module')
@@ -54,7 +54,7 @@ export async function PATCH(
 
     // Check permissions
     const isAdmin = user.isAdmin || false
-    const hasPermission = checkModulePermission(module, user.id, isAdmin, 'write')
+    const hasPermission = checkModulePermission(moduleDoc, user.id, isAdmin, 'write')
 
     if (!hasPermission) {
       return forbiddenResponse('Insufficient permissions to update this module')
@@ -103,7 +103,7 @@ export async function DELETE(
   try {
     const { name } = await params
 
-    const module = await db.modules.findOne({ name })
+    const moduleDoc = await db.modules.findOne({ name })
 
     if (!module) {
       return notFoundResponse('Module')
@@ -111,7 +111,7 @@ export async function DELETE(
 
     // Check permissions (owner or admin only)
     const isAdmin = user.isAdmin || false
-    const hasPermission = checkModulePermission(module, user.id, isAdmin, 'owner')
+    const hasPermission = checkModulePermission(moduleDoc, user.id, isAdmin, 'owner')
 
     if (!hasPermission) {
       return forbiddenResponse('Only the module owner can delete this module')

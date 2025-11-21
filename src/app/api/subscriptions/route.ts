@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build query for subscriptions
-    const query: any = { applicationId: { $in: applicationIds } }
+    const query: Record<string, unknown> = { applicationId: { $in: applicationIds } }
     if (status) query.status = status
     if (moduleId) query.moduleId = moduleId
 
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     // Populate with application and module data
     const populatedSubscriptions = await Promise.all(
       subscriptions.map(async (sub) => {
-        const [application, module] = await Promise.all([
+        const [application, moduleDoc] = await Promise.all([
           findById<ApplicationDocument>('applications', sub.applicationId),
           findById<ModuleDocument>('modules', sub.moduleId),
         ])
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
         return {
           ...sub,
           application: application || null,
-          module: module || null,
+          module: moduleDoc || null,
         }
       })
     )
@@ -120,13 +120,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify module exists and is active
-    const module = await db.modules.findOne({ _id: moduleId })
+    const moduleDoc = await db.modules.findOne({ _id: moduleId })
 
-    if (!module) {
+    if (!moduleDoc) {
       return notFoundResponse('Module')
     }
 
-    if (module.status !== 'active') {
+    if (moduleDoc.status !== 'active') {
       return errorResponse('Module is not active')
     }
 
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
     const newSubscription = {
       applicationId,
       moduleId,
-      moduleName: module.name,
+      moduleName: moduleDoc.name,
       status: 'pending' as const,
       requestedBy: {
         userId: user.id,

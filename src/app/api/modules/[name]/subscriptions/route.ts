@@ -29,7 +29,7 @@ export async function GET(
     const { limit, skip } = getPaginationParams(searchParams, { limit: 50 })
 
     // Get module
-    const module = await db.modules.findOne({ name })
+    const moduleDoc = await db.modules.findOne({ name })
 
     if (!module) {
       return notFoundResponse('Module')
@@ -41,8 +41,8 @@ export async function GET(
     }
 
     // Build query
-    const query: any = {
-      moduleId: module._id,
+    const query: Record<string, unknown> = {
+      moduleId: moduleDoc._id,
     }
 
     if (status) {
@@ -50,7 +50,7 @@ export async function GET(
     }
 
     // Find all subscriptions for this module
-    let subscriptions = await db.subscriptions.find(query)
+    const subscriptions = await db.subscriptions.find(query)
 
     // Sort by most recent
     subscriptions.sort((a, b) => {

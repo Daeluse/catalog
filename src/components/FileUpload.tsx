@@ -44,7 +44,7 @@ export function FileUpload({
 
   // Extract relative path from File object
   const getRelativePath = useCallback((file: File): string => {
-    // @ts-ignore - webkitRelativePath is non-standard but widely supported
+    // @ts-expect-error - webkitRelativePath is non-standard but widely supported
     const webkitPath = file.webkitRelativePath
     if (webkitPath) {
       // Remove the top-level folder name (e.g., "dist/")
@@ -116,7 +116,7 @@ export function FileUpload({
       setFiles(updatedFiles)
       onFilesSelected(updatedFiles.map((f) => ({ file: f.file, relativePath: f.relativePath })))
     },
-    [files, maxFiles, multiple, onFilesSelected, validateFile]
+    [files, maxFiles, multiple, onFilesSelected, validateFile, getRelativePath]
   )
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -174,17 +174,19 @@ export function FileUpload({
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [handleFiles, allowDirectories]
   )
 
   // Recursively traverse directory tree and collect files
-  const traverseFileTree = async (item: any, path = ''): Promise<File[]> => {
+  const traverseFileTree = async (item: FileSystemEntry, path = ''): Promise<File[]> => {
     const files: File[] = []
 
     if (item.isFile) {
+      const fileEntry = item as FileSystemFileEntry
       try {
         const file = await new Promise<File>((resolve, reject) => {
-          item.file((file: File) => {
+          fileEntry.file((file: File) => {
             // Create a new File object with the relative path
             const newFile = new File([file], file.name, { type: file.type })
             // Attach the relative path as a custom property
@@ -200,16 +202,17 @@ export function FileUpload({
         console.error(`Error reading file ${path}:`, error)
       }
     } else if (item.isDirectory) {
-      const dirReader = item.createReader()
+      const dirEntry = item as FileSystemDirectoryEntry
+      const dirReader = dirEntry.createReader()
 
       // readEntries() must be called repeatedly until it returns an empty array
       // because it only returns up to 100 entries at a time
-      const readAllEntries = async (): Promise<any[]> => {
-        const allEntries: any[] = []
+      const readAllEntries = async (): Promise<FileSystemEntry[]> => {
+        const allEntries: FileSystemEntry[] = []
 
         const readBatch = async (): Promise<void> => {
-          const entries = await new Promise<any[]>((resolve) => {
-            dirReader.readEntries((entries: any[]) => resolve(entries))
+          const entries = await new Promise<FileSystemEntry[]>((resolve) => {
+            dirReader.readEntries((entries: FileSystemEntry[]) => resolve(entries))
           })
 
           if (entries.length > 0) {

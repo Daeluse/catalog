@@ -12,7 +12,7 @@ import { SubscriptionStatusBadge } from '@/components/SubscriptionStatusBadge'
 import { Badge } from '@/components/Badge'
 import { useFetch } from '@/hooks/useFetch'
 import { formatDate } from '@/lib/utils'
-import type { SubscriptionWithDetails, PaginatedResponse, SubscriptionStatus } from '@/types/api'
+import type { SubscriptionWithDetails, PaginatedResponse } from '@/types/api'
 
 export default function SubscriptionsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -21,7 +21,7 @@ export default function SubscriptionsPage() {
     '/api/subscriptions?limit=100'
   )
 
-  const subscriptions = data?.subscriptions || []
+  const subscriptions = useMemo(() => data?.subscriptions || [], [data])
 
   const filteredSubscriptions = useMemo(() => {
     if (statusFilter === 'all') return subscriptions

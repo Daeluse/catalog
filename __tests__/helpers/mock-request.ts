@@ -7,7 +7,7 @@ export function createMockRequest(options: {
   method?: string
   url?: string
   headers?: Record<string, string>
-  body?: any
+  body?: unknown
   searchParams?: Record<string, string>
 } = {}): NextRequest {
   const {
@@ -36,7 +36,7 @@ export function createMockRequest(options: {
     requestInit.body = JSON.stringify(body)
   }
 
-  return new NextRequest(urlObj.toString(), requestInit as any)
+  return new NextRequest(urlObj.toString(), requestInit as unknown as RequestInit)
 }
 
 /**
@@ -48,7 +48,7 @@ export function createMockRequestWithToken(
     method?: string
     url?: string
     headers?: Record<string, string>
-    body?: any
+    body?: unknown
   } = {}
 ): NextRequest {
   return createMockRequest({
@@ -85,8 +85,8 @@ export function createMockMultipartRequest(options: {
   }
 
   if (formData) {
-    requestInit.body = formData as any
+    requestInit.body = formData as unknown as BodyInit
   }
 
-  return new NextRequest(url, requestInit as any)
+  return new NextRequest(url, requestInit as unknown as RequestInit)
 }

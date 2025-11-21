@@ -105,7 +105,7 @@ export function setCorsHeaders(
 export async function createCorsResponse(
   origin: string | null,
   moduleName: string,
-  data?: any,
+  data?: unknown,
   status: number = 200
 ): Promise<NextResponse | null> {
   const approvedOrigin = await checkOriginApproval(origin, moduleName)

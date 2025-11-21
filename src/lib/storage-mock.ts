@@ -83,7 +83,7 @@ class MockBlobStorage {
       const data = await fs.readFile(fullPath)
 
       // Try to read metadata
-      let metadata: any = {}
+      let metadata: Record<string, string> = {}
       let contentType: string | undefined
 
       try {

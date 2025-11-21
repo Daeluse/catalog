@@ -1,5 +1,5 @@
 import { connectDB } from './db'
-import { ApiToken, type IApiToken } from '@/models'
+import { ApiToken } from '@/models'
 import { getMockDatabase } from './db-mock'
 import { ApiTokenDocument } from '@/types/database'
 import crypto from 'crypto'
@@ -41,7 +41,7 @@ export async function createApiToken(
   userName: string,
   name: string,
   expiresInDays: number
-): Promise<{ token: string; tokenRecord: any }> {
+): Promise<{ token: string; tokenRecord: ApiTokenDocument }> {
   const tokenString = generateTokenString()
   const tokenHash = await hashToken(tokenString)
 
@@ -194,7 +194,7 @@ export async function revokeApiToken(
 /**
  * List all API tokens for a user
  */
-export async function listApiTokens(userId: string): Promise<any[]> {
+export async function listApiTokens(userId: string): Promise<ApiTokenDocument[]> {
   try {
     if (useMocks) {
       const db = getMockDatabase()

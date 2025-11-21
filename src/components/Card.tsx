@@ -14,7 +14,7 @@ export function Card({
   variant = 'default',
   as: Component = 'div',
   ...props
-}: CardProps & ComponentPropsWithoutRef<any>) {
+}: CardProps & Omit<ComponentPropsWithoutRef<ElementType>, keyof CardProps>) {
   return (
     <Component
       className={cn(

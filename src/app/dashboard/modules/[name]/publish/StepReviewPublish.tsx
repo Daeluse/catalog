@@ -8,9 +8,14 @@ interface VersionData {
   changelog: string
 }
 
+interface UploadedAsset {
+  fileName: string
+  size: number
+}
+
 interface StepReviewPublishProps {
   versionData: VersionData
-  uploadedAssets: any[]
+  uploadedAssets: UploadedAsset[]
   loading: boolean
   onPublish: () => void
   onBack: () => void
@@ -89,7 +94,7 @@ export default function StepReviewPublish({
             ) : (
               <>
                 <strong>Note:</strong> No assets were uploaded. You can still publish this
-                version, but users won't be able to load the module until assets are added.
+                version, but users won&apos;t be able to load the module until assets are added.
               </>
             )}
           </p>

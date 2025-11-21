@@ -58,28 +58,28 @@ describe('GET /api/modules/[name]/versions', () => {
   })
 
   it('should return all versions for a module', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.1.0',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '2.0.0',
       })
     )
@@ -98,7 +98,7 @@ describe('GET /api/modules/[name]/versions', () => {
   })
 
   it('should sort versions by semver in descending order', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
@@ -106,21 +106,21 @@ describe('GET /api/modules/[name]/versions', () => {
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.1.0',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '2.0.0',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
       })
     )
@@ -383,7 +383,7 @@ describe('POST /api/modules/[name]/versions', () => {
   })
 
   it('should reject duplicate version', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({
         name: '@test/module',
         owner: {
@@ -397,7 +397,7 @@ describe('POST /api/modules/[name]/versions', () => {
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
       })
     )

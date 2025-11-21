@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 interface UseFetchOptions<T> extends RequestInit {
   onSuccess?: (data: T) => void
@@ -17,7 +17,7 @@ interface UseFetchReturn<T> {
  * Hook for fetching data from an API endpoint
  * Handles loading, error states, and provides refetch functionality
  */
-export function useFetch<T = any>(
+export function useFetch<T = unknown>(
   url: string | null,
   options: UseFetchOptions<T> = {}
 ): UseFetchReturn<T> {
@@ -26,6 +26,12 @@ export function useFetch<T = any>(
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(!skip)
   const [error, setError] = useState<string | null>(null)
+
+  // Stable reference to fetchOptions to avoid unnecessary re-fetches
+  const fetchOptionsRef = useRef(fetchOptions)
+  useEffect(() => {
+    fetchOptionsRef.current = fetchOptions
+  }, [JSON.stringify(fetchOptions)]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchData = useCallback(async () => {
     if (!url) {
@@ -37,7 +43,7 @@ export function useFetch<T = any>(
       setLoading(true)
       setError(null)
 
-      const response = await fetch(url, fetchOptions)
+      const response = await fetch(url, fetchOptionsRef.current)
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
@@ -60,7 +66,7 @@ export function useFetch<T = any>(
     } finally {
       setLoading(false)
     }
-  }, [url, JSON.stringify(fetchOptions), onSuccess, onError])
+  }, [url, onSuccess, onError])
 
   useEffect(() => {
     if (!skip) {

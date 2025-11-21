@@ -127,7 +127,7 @@ export default function Home() {
               <span className="text-sm text-zinc-600 dark:text-zinc-400">Active filters:</span>
               {searchQuery && (
                 <Badge>
-                  Search: "{searchQuery}"
+                  Search: &quot;{searchQuery}&quot;
                   <button
                     onClick={() => setSearchQuery('')}
                     className="ml-1 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"

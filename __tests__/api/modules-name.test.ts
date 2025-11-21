@@ -122,12 +122,12 @@ describe('PATCH /api/modules/[name]', () => {
   beforeEach(async () => {
     await resetMockDB()
     vi.clearAllMocks()
-    mockAuth.mockResolvedValue(null as any)
+    mockAuth.mockResolvedValue(null)
     process.env.USE_MOCKS = 'true'
   })
 
   it('should require authentication', async () => {
-    mockAuth.mockResolvedValue(null as any)
+    mockAuth.mockResolvedValue(null)
 
     const request = createMockRequest({
       method: 'PATCH',
@@ -376,12 +376,12 @@ describe('DELETE /api/modules/[name]', () => {
   beforeEach(async () => {
     await resetMockDB()
     vi.clearAllMocks()
-    mockAuth.mockResolvedValue(null as any)
+    mockAuth.mockResolvedValue(null)
     process.env.USE_MOCKS = 'true'
   })
 
   it('should require authentication', async () => {
-    mockAuth.mockResolvedValue(null as any)
+    mockAuth.mockResolvedValue(null)
 
     const request = createMockRequest({
       method: 'DELETE',
@@ -419,7 +419,7 @@ describe('DELETE /api/modules/[name]', () => {
 
   it('should allow owner to delete module', async () => {
     // Create module owned by user-123
-    const moduleResult = await db.modules.insertOne(
+    await db.modules.insertOne(
       testData.createModule({
         name: '@test/deletable',
         owner: {

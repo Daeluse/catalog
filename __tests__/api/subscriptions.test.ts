@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import type { Session } from 'next-auth'
 import { GET, POST } from '../../src/app/api/subscriptions/route'
 import { PATCH as APPROVE } from '../../src/app/api/subscriptions/[id]/approve/route'
 import { createMockRequest, createMockRequestWithToken } from '../helpers/mock-request'
@@ -99,7 +100,7 @@ describe('GET /api/subscriptions', () => {
     )
 
     // Create modules
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
@@ -107,14 +108,14 @@ describe('GET /api/subscriptions', () => {
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: userApp.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
       })
     )
 
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: otherApp.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
       })
     )
 
@@ -148,12 +149,12 @@ describe('GET /api/subscriptions', () => {
       })
     )
 
-    const module = await db.modules.insertOne(testData.createModule())
+    const moduleData = await db.modules.insertOne(testData.createModule())
 
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         status: 'pending',
       })
     )
@@ -161,7 +162,7 @@ describe('GET /api/subscriptions', () => {
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         status: 'approved',
       })
     )
@@ -196,14 +197,14 @@ describe('GET /api/subscriptions', () => {
       })
     )
 
-    const module = await db.modules.insertOne(testData.createModule())
+    const moduleData = await db.modules.insertOne(testData.createModule())
 
     // Create 5 subscriptions
     for (let i = 0; i < 5; i++) {
       await db.subscriptions.insertOne(
         testData.createSubscription({
           applicationId: app.insertedId,
-          moduleId: module.insertedId,
+          moduleId: moduleData.insertedId,
           moduleName: `@test/module-${i}`,
         })
       )
@@ -374,7 +375,7 @@ describe('POST /api/subscriptions', () => {
       })
     )
 
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({
         status: 'deprecated',
       })
@@ -392,7 +393,7 @@ describe('POST /api/subscriptions', () => {
       url: 'http://localhost:3000/api/subscriptions',
       body: {
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
       },
     })
 
@@ -412,7 +413,7 @@ describe('POST /api/subscriptions', () => {
       })
     )
 
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({
         name: '@test/my-module',
         status: 'active',
@@ -431,7 +432,7 @@ describe('POST /api/subscriptions', () => {
       url: 'http://localhost:3000/api/subscriptions',
       body: {
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
       },
     })
 
@@ -457,7 +458,7 @@ describe('POST /api/subscriptions', () => {
       })
     )
 
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({
         status: 'active',
       })
@@ -467,7 +468,7 @@ describe('POST /api/subscriptions', () => {
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
       })
     )
 
@@ -483,7 +484,7 @@ describe('POST /api/subscriptions', () => {
       url: 'http://localhost:3000/api/subscriptions',
       body: {
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
       },
     })
 
@@ -524,7 +525,7 @@ describe('PATCH /api/subscriptions/[id]/approve', () => {
         name: 'User',
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    } as any)
+    } as Session)
 
     const request = createMockRequest({
       method: 'PATCH',
@@ -540,7 +541,7 @@ describe('PATCH /api/subscriptions/[id]/approve', () => {
   })
 
   it('should deny approval for non-owner/non-maintainer', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({
         owner: {
           userId: 'owner-123',
@@ -555,7 +556,7 @@ describe('PATCH /api/subscriptions/[id]/approve', () => {
     const subscription = await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
       })
     )
 
@@ -566,7 +567,7 @@ describe('PATCH /api/subscriptions/[id]/approve', () => {
         name: 'Other',
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    } as any)
+    } as Session)
 
     const request = createMockRequest({
       method: 'PATCH',
@@ -582,7 +583,7 @@ describe('PATCH /api/subscriptions/[id]/approve', () => {
   })
 
   it('should allow module owner to approve subscription', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({
         owner: {
           userId: 'user-123',
@@ -597,7 +598,7 @@ describe('PATCH /api/subscriptions/[id]/approve', () => {
     const subscription = await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         status: 'pending',
       })
     )
@@ -609,7 +610,7 @@ describe('PATCH /api/subscriptions/[id]/approve', () => {
         name: 'User',
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    } as any)
+    } as Session)
 
     const request = createMockRequest({
       method: 'PATCH',
@@ -632,7 +633,7 @@ describe('PATCH /api/subscriptions/[id]/approve', () => {
   })
 
   it('should allow maintainer to approve subscription', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({
         owner: {
           userId: 'owner-123',
@@ -655,7 +656,7 @@ describe('PATCH /api/subscriptions/[id]/approve', () => {
     const subscription = await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         status: 'pending',
       })
     )
@@ -667,7 +668,7 @@ describe('PATCH /api/subscriptions/[id]/approve', () => {
         name: 'Maintainer',
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    } as any)
+    } as Session)
 
     const request = createMockRequest({
       method: 'PATCH',

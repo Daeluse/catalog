@@ -35,10 +35,10 @@ describe('db-mock', () => {
 
       // Should only return items with score <= 20
       expect(results.length).toBeGreaterThanOrEqual(2)
-      const matchingItems = results.filter((r: any) => r.score <= 20)
+      const matchingItems = results.filter((r) => (r as { score: number }).score <= 20)
       expect(matchingItems).toHaveLength(2)
-      expect(matchingItems.map((r: any) => r.name)).toContain('item1')
-      expect(matchingItems.map((r: any) => r.name)).toContain('item2')
+      expect(matchingItems.map((r) => (r as { name: string }).name)).toContain('item1')
+      expect(matchingItems.map((r) => (r as { name: string }).name)).toContain('item2')
     })
 
     it('should support $gte operator', async () => {
@@ -57,10 +57,10 @@ describe('db-mock', () => {
 
       const results = await collection.find({ score: { $gte: 20 } })
 
-      const matchingItems = results.filter((r: any) => r.score >= 20)
+      const matchingItems = results.filter((r) => (r as { score: number }).score >= 20)
       expect(matchingItems).toHaveLength(2)
-      expect(matchingItems.map((r: any) => r.name)).toContain('item2')
-      expect(matchingItems.map((r: any) => r.name)).toContain('item3')
+      expect(matchingItems.map((r) => (r as { name: string }).name)).toContain('item2')
+      expect(matchingItems.map((r) => (r as { name: string }).name)).toContain('item3')
     })
 
     it('should support $lt operator', async () => {
@@ -79,10 +79,10 @@ describe('db-mock', () => {
 
       const results = await collection.find({ score: { $lt: 25 } })
 
-      const matchingItems = results.filter((r: any) => r.score < 25)
+      const matchingItems = results.filter((r) => (r as { score: number }).score < 25)
       expect(matchingItems).toHaveLength(2)
-      expect(matchingItems.map((r: any) => r.name)).toContain('item1')
-      expect(matchingItems.map((r: any) => r.name)).toContain('item2')
+      expect(matchingItems.map((r) => (r as { name: string }).name)).toContain('item1')
+      expect(matchingItems.map((r) => (r as { name: string }).name)).toContain('item2')
     })
 
     it('should support $gt operator', async () => {
@@ -101,10 +101,10 @@ describe('db-mock', () => {
 
       const results = await collection.find({ score: { $gt: 15 } })
 
-      const matchingItems = results.filter((r: any) => r.score > 15)
+      const matchingItems = results.filter((r) => (r as { score: number }).score > 15)
       expect(matchingItems).toHaveLength(2)
-      expect(matchingItems.map((r: any) => r.name)).toContain('item2')
-      expect(matchingItems.map((r: any) => r.name)).toContain('item3')
+      expect(matchingItems.map((r) => (r as { name: string }).name)).toContain('item2')
+      expect(matchingItems.map((r) => (r as { name: string }).name)).toContain('item3')
     })
 
     it('should support combined comparison operators', async () => {
@@ -123,9 +123,12 @@ describe('db-mock', () => {
 
       const results = await collection.find({ score: { $gte: 15, $lte: 25 } })
 
-      const matchingItems = results.filter((r: any) => r.score >= 15 && r.score <= 25)
+      const matchingItems = results.filter((r) => {
+        const score = (r as { score: number }).score
+        return score >= 15 && score <= 25
+      })
       expect(matchingItems).toHaveLength(1)
-      expect(matchingItems[0].name).toBe('item2')
+      expect((matchingItems[0] as { name: string }).name).toBe('item2')
     })
   })
 

@@ -7,7 +7,7 @@ import {
   serverErrorResponse,
 } from '@/lib/api-responses'
 import { validators, validationMessages } from '@/lib/validators'
-import { requireAuth, isAuthError, optionalAuth } from '@/lib/with-auth'
+import { requireAuth, isAuthError } from '@/lib/with-auth'
 import { db } from '@/lib/db-adapter'
 import { getPaginationParams } from '@/lib/pagination'
 import { ModuleQuery } from '@/types/database'
@@ -23,17 +23,17 @@ export async function GET(request: NextRequest) {
     const pagination = getPaginationParams(searchParams, { limit: 20 })
 
     // Build base query
-    let query: ModuleQuery = { status: 'active' }
-    if (category) query.category = category as any
+    const query: ModuleQuery = { status: 'active' }
+    if (category) query.category = category as string
     if (organization) query.organization = organization
 
     // Text search using $or and $regex for MongoDB
     if (search) {
       query.$or = [
-        { name: { $regex: search, $options: 'i' } } as any,
-        { displayName: { $regex: search, $options: 'i' } } as any,
-        { description: { $regex: search, $options: 'i' } } as any,
-        { keywords: { $regex: search, $options: 'i' } } as any,
+        { name: { $regex: search, $options: 'i' } },
+        { displayName: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { keywords: { $regex: search, $options: 'i' } },
       ]
     }
 
@@ -45,13 +45,13 @@ export async function GET(request: NextRequest) {
       sortQuery = { displayName: 1 }
     }
 
-    const modules = await db.modules.find(query as any, {
+    const modules = await db.modules.find(query, {
       sort: sortQuery,
       limit: pagination.limit,
       skip: pagination.skip,
     })
 
-    const total = await db.modules.countDocuments(query as any)
+    const total = await db.modules.countDocuments(query)
 
     return successResponse({
       modules,

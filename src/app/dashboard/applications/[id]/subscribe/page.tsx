@@ -31,7 +31,7 @@ export default function SubscribeToModulesPage() {
 
   const getSubscriptionStatus = (moduleId: string): Subscription | undefined => {
     return subsData?.subscriptions?.find(
-      (sub) => sub.moduleId === moduleId && (sub as any).application?._id === id
+      (sub) => sub.moduleId === moduleId && (sub as { application?: { _id: string } }).application?._id === id
     )
   }
 

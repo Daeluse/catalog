@@ -24,14 +24,14 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should resolve "latest" to most recent stable version', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
         isPrerelease: false,
       })
@@ -39,7 +39,7 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.1.0',
         isPrerelease: false,
       })
@@ -47,7 +47,7 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '2.0.0-beta.1',
         isPrerelease: true,
       })
@@ -70,14 +70,14 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should return 404 when no stable versions exist for "latest"', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '2.0.0-beta.1',
         isPrerelease: true,
       })
@@ -95,14 +95,14 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should resolve "next" to most recent version including prereleases', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
         isPrerelease: false,
       })
@@ -110,7 +110,7 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '2.0.0-beta.1',
         isPrerelease: true,
       })
@@ -132,21 +132,21 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should resolve specific version', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.1.0',
       })
     )
@@ -165,14 +165,14 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should return 404 when specific version does not exist', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
       })
     )
@@ -189,28 +189,28 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should resolve caret range (^1.0.0)', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.2.3',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '2.0.0',
       })
     )
@@ -230,28 +230,28 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should resolve tilde range (~1.1.0)', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.1.0',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.1.5',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.2.0',
       })
     )
@@ -271,28 +271,28 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should resolve comparison range (>=1.0.0)', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '0.9.0',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '2.0.0',
       })
     )
@@ -311,28 +311,28 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should resolve wildcard range (1.x)', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.5.0',
       })
     )
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '2.0.0',
       })
     )
@@ -351,14 +351,14 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should return 404 when no version matches range', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
       })
     )
@@ -375,14 +375,14 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should return 404 for unmatched tag', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
       })
     )
@@ -399,14 +399,14 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should include metadata in response', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
         federation: {
           name: '@test/module',
@@ -442,7 +442,7 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
   })
 
   it('should include publishedAt in response', async () => {
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
@@ -451,7 +451,7 @@ describe('GET /api/modules/[name]/resolve/[tag]', () => {
     await db.versions.insertOne(
       testData.createVersion({
         moduleName: '@test/module',
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         version: '1.0.0',
         publishedAt,
       })

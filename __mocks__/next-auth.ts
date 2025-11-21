@@ -17,4 +17,4 @@ export const handlers = {
 }
 
 // Default to unauthenticated
-auth.mockResolvedValue(null as any)
+auth.mockResolvedValue(null)

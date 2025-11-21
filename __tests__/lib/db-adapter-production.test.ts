@@ -46,7 +46,7 @@ describe('db-adapter (production mode)', () => {
       }))
 
       const { db } = await import('../../src/lib/db-adapter')
-      ;(db.modules as any).model = mockModel
+      ;(db.modules as unknown as { model: unknown }).model = mockModel
 
       const result = await db.modules.find(
         { status: 'active' },
@@ -73,7 +73,7 @@ describe('db-adapter (production mode)', () => {
       }))
 
       const { db } = await import('../../src/lib/db-adapter')
-      ;(db.modules as any).model = mockModel
+      ;(db.modules as unknown as { model: unknown }).model = mockModel
 
       const result = await db.modules.find({})
 
@@ -99,7 +99,7 @@ describe('db-adapter (production mode)', () => {
       }))
 
       const { db } = await import('../../src/lib/db-adapter')
-      ;(db.modules as any).model = mockModel
+      ;(db.modules as unknown as { model: unknown }).model = mockModel
 
       const result = await db.modules.findOne({ _id: '1' })
 
@@ -121,7 +121,7 @@ describe('db-adapter (production mode)', () => {
       }))
 
       const { db } = await import('../../src/lib/db-adapter')
-      ;(db.modules as any).model = mockModel
+      ;(db.modules as unknown as { model: unknown }).model = mockModel
 
       const result = await db.modules.findOne({ _id: 'non-existent' })
 
@@ -150,7 +150,7 @@ describe('db-adapter (production mode)', () => {
       const { db } = await import('../../src/lib/db-adapter')
 
       // Replace the model with our mock
-      ;(db.modules as any).model = mockModel
+      ;(db.modules as unknown as { model: unknown }).model = mockModel
 
       const result = await db.modules.insertOne({ name: 'test' })
 
@@ -175,7 +175,7 @@ describe('db-adapter (production mode)', () => {
       }))
 
       const { db } = await import('../../src/lib/db-adapter')
-      ;(db.modules as any).model = mockModel
+      ;(db.modules as unknown as { model: unknown }).model = mockModel
 
       const result = await db.modules.updateOne(
         { _id: 'test-id' },
@@ -205,7 +205,7 @@ describe('db-adapter (production mode)', () => {
       }))
 
       const { db } = await import('../../src/lib/db-adapter')
-      ;(db.modules as any).model = mockModel
+      ;(db.modules as unknown as { model: unknown }).model = mockModel
 
       const result = await db.modules.updateOne(
         { _id: 'non-existent' },
@@ -232,7 +232,7 @@ describe('db-adapter (production mode)', () => {
       }))
 
       const { db } = await import('../../src/lib/db-adapter')
-      ;(db.modules as any).model = mockModel
+      ;(db.modules as unknown as { model: unknown }).model = mockModel
 
       const result = await db.modules.deleteOne({ _id: 'test-id' })
 
@@ -254,7 +254,7 @@ describe('db-adapter (production mode)', () => {
       }))
 
       const { db } = await import('../../src/lib/db-adapter')
-      ;(db.modules as any).model = mockModel
+      ;(db.modules as unknown as { model: unknown }).model = mockModel
 
       const result = await db.modules.deleteOne({ _id: 'non-existent' })
 
@@ -275,7 +275,7 @@ describe('db-adapter (production mode)', () => {
       }))
 
       const { db } = await import('../../src/lib/db-adapter')
-      ;(db.modules as any).model = mockModel
+      ;(db.modules as unknown as { model: unknown }).model = mockModel
 
       const count = await db.modules.countDocuments({ status: 'active' })
 
@@ -295,7 +295,7 @@ describe('db-adapter (production mode)', () => {
       }))
 
       const { db } = await import('../../src/lib/db-adapter')
-      ;(db.modules as any).model = mockModel
+      ;(db.modules as unknown as { model: unknown }).model = mockModel
 
       const count = await db.modules.countDocuments()
 

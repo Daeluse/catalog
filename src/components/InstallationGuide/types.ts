@@ -11,7 +11,7 @@ export interface Version {
       id: string
       name: string
       path: string
-      assets?: any
+      assets?: Record<string, unknown>
     }> | Record<string, {
       import: string
       name: string

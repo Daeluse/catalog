@@ -61,10 +61,17 @@ function extractBearerToken(request: NextRequest): string | null {
  * @param request - NextRequest object (optional, needed for API token auth)
  * @returns User object with session or rate limit info, or error response
  */
+interface RateLimitInfo {
+  limit: number
+  remaining: number
+  resetAt: Date
+  allowed: boolean
+}
+
 export async function requireAuth(
   request?: NextRequest
 ): Promise<
-  | { user: AuthenticatedUser; session: Session; rateLimit?: any }
+  | { user: AuthenticatedUser; session: Session; rateLimit?: RateLimitInfo }
   | { error: NextResponse }
 > {
   // First, try session-based authentication
@@ -146,7 +153,7 @@ export async function requireAuth(
 export async function requireAdmin(
   request?: NextRequest
 ): Promise<
-  { user: AuthenticatedUser; session: Session; rateLimit?: any } | { error: NextResponse }
+  { user: AuthenticatedUser; session: Session; rateLimit?: RateLimitInfo } | { error: NextResponse }
 > {
   const authResult = await requireAuth(request)
 
@@ -176,7 +183,7 @@ export async function optionalAuth(
 ): Promise<{
   user: AuthenticatedUser | null
   session: Session | null
-  rateLimit?: any
+  rateLimit?: RateLimitInfo
 }> {
   const authResult = await requireAuth(request)
 
@@ -196,7 +203,7 @@ export async function optionalAuth(
  */
 export function isAuthError(
   result:
-    | { user: AuthenticatedUser; session: Session; rateLimit?: any }
+    | { user: AuthenticatedUser; session: Session; rateLimit?: RateLimitInfo }
     | { error: NextResponse }
 ): result is { error: NextResponse } {
   return 'error' in result
@@ -207,7 +214,7 @@ export function isAuthError(
  */
 export function addRateLimitHeaders(
   response: NextResponse,
-  rateLimit?: any
+  rateLimit?: RateLimitInfo
 ): NextResponse {
   if (!rateLimit) {
     return response
@@ -235,10 +242,10 @@ export function withAuth(
     request: NextRequest,
     user: AuthenticatedUser,
     session: Session,
-    context?: any
+    context?: Record<string, unknown>
   ) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, context?: any): Promise<NextResponse> => {
+  return async (request: NextRequest, context?: Record<string, unknown>): Promise<NextResponse> => {
     const authResult = await requireAuth(request)
 
     if (isAuthError(authResult)) {
@@ -265,10 +272,10 @@ export function withAdmin(
     request: NextRequest,
     user: AuthenticatedUser,
     session: Session,
-    context?: any
+    context?: Record<string, unknown>
   ) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, context?: any): Promise<NextResponse> => {
+  return async (request: NextRequest, context?: Record<string, unknown>): Promise<NextResponse> => {
     const authResult = await requireAdmin(request)
 
     if (isAuthError(authResult)) {
@@ -295,10 +302,10 @@ export function withOptionalAuth(
     request: NextRequest,
     user: AuthenticatedUser | null,
     session: Session | null,
-    context?: any
+    context?: Record<string, unknown>
   ) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, context?: any): Promise<NextResponse> => {
+  return async (request: NextRequest, context?: Record<string, unknown>): Promise<NextResponse> => {
     const { user, session, rateLimit } = await optionalAuth(request)
     const response = await handler(request, user, session, context)
 

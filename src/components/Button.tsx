@@ -1,4 +1,4 @@
-import { forwardRef, ButtonHTMLAttributes, ElementType, ComponentPropsWithoutRef } from 'react'
+import { forwardRef, ElementType, ComponentPropsWithoutRef } from 'react'
 import { cn } from '@/lib/utils'
 
 type ButtonOwnProps = {
@@ -10,7 +10,7 @@ type ButtonOwnProps = {
 
 type ButtonProps<T extends ElementType = 'button'> = ButtonOwnProps & Omit<ComponentPropsWithoutRef<T>, keyof ButtonOwnProps>
 
-const Button = forwardRef<any, ButtonProps<any>>(
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       className,

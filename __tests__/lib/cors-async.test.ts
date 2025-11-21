@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { checkOriginApproval, setCorsHeaders, createCorsResponse } from '../../src/lib/cors'
 import { NextResponse } from 'next/server'
 import { resetMockDB, testData } from '../helpers/mock-db'
@@ -30,14 +30,14 @@ describe('checkOriginApproval', () => {
       })
     )
 
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         moduleName: '@test/module',
         status: 'pending', // Not approved
       })
@@ -56,14 +56,14 @@ describe('checkOriginApproval', () => {
       })
     )
 
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         moduleName: '@test/module',
         status: 'approved',
       })
@@ -82,14 +82,14 @@ describe('checkOriginApproval', () => {
       })
     )
 
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         moduleName: '@test/module',
         status: 'approved',
       })
@@ -108,14 +108,14 @@ describe('checkOriginApproval', () => {
       })
     )
 
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         moduleName: '@test/module',
         status: 'approved',
       })
@@ -143,14 +143,14 @@ describe('checkOriginApproval', () => {
       })
     )
 
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app1.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         moduleName: '@test/module',
         status: 'approved',
       })
@@ -159,7 +159,7 @@ describe('checkOriginApproval', () => {
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app2.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         moduleName: '@test/module',
         status: 'approved',
       })
@@ -178,14 +178,14 @@ describe('checkOriginApproval', () => {
       origins: undefined, // No origins
     })
 
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         moduleName: '@test/module',
         status: 'approved',
       })
@@ -245,14 +245,14 @@ describe('createCorsResponse', () => {
       })
     )
 
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         moduleName: '@test/module',
         status: 'approved',
       })
@@ -278,14 +278,14 @@ describe('createCorsResponse', () => {
       })
     )
 
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         moduleName: '@test/module',
         status: 'approved',
       })
@@ -305,14 +305,14 @@ describe('createCorsResponse', () => {
       })
     )
 
-    const module = await db.modules.insertOne(
+    const moduleData = await db.modules.insertOne(
       testData.createModule({ name: '@test/module' })
     )
 
     await db.subscriptions.insertOne(
       testData.createSubscription({
         applicationId: app.insertedId,
-        moduleId: module.insertedId,
+        moduleId: moduleData.insertedId,
         moduleName: '@test/module',
         status: 'approved',
       })

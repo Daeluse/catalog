@@ -7,7 +7,7 @@ class APIError extends Error {
   constructor(
     message: string,
     public status: number,
-    public details?: any
+    public details?: Record<string, unknown>
   ) {
     super(message)
     this.name = 'APIError'
@@ -52,7 +52,7 @@ export async function apiGet<T>(
  */
 export async function apiPost<T>(
   url: string,
-  data?: any,
+  data?: Record<string, unknown>,
   options?: RequestInit
 ): Promise<T> {
   const response = await fetch(url, {
@@ -73,7 +73,7 @@ export async function apiPost<T>(
  */
 export async function apiPatch<T>(
   url: string,
-  data?: any,
+  data?: Record<string, unknown>,
   options?: RequestInit
 ): Promise<T> {
   const response = await fetch(url, {
@@ -94,7 +94,7 @@ export async function apiPatch<T>(
  */
 export async function apiPut<T>(
   url: string,
-  data?: any,
+  data?: Record<string, unknown>,
   options?: RequestInit
 ): Promise<T> {
   const response = await fetch(url, {
@@ -128,7 +128,7 @@ export async function apiDelete<T = void>(
 /**
  * Build query string from params object
  */
-export function buildQueryString(params: Record<string, any>): string {
+export function buildQueryString(params: Record<string, unknown>): string {
   const searchParams = new URLSearchParams()
 
   Object.entries(params).forEach(([key, value]) => {

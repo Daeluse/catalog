@@ -54,10 +54,10 @@ export interface FederationMetadata {
   name: string
   entry: string
   manifestUrl: string
-  exposes: Record<string, any>
-  shared: Record<string, any>
+  exposes: Record<string, unknown>
+  shared: Record<string, unknown>
   remotes?: Record<string, string>
-  buildMeta: Record<string, any>
+  buildMeta: Record<string, unknown>
 }
 
 export interface Version {
@@ -140,7 +140,7 @@ export interface PaginatedResponse<T> {
 
 export interface APIError {
   error: string
-  details?: any
+  details?: unknown
 }
 
 // Form state types

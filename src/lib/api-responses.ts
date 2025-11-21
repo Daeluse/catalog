@@ -13,8 +13,8 @@ export function createdResponse<T>(data: T) {
   return NextResponse.json(data, { status: 201 })
 }
 
-export function errorResponse(message: string, status = 400, details?: any) {
-  const response: { error: string; details?: any } = { error: message }
+export function errorResponse(message: string, status = 400, details?: Record<string, unknown>) {
+  const response: { error: string; details?: Record<string, unknown> } = { error: message }
   if (details) {
     response.details = details
   }

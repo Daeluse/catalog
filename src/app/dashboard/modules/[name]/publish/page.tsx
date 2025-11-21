@@ -40,7 +40,7 @@ export default function PublishVersionPage() {
 
   const [manifestData, setManifestData] = useState('')
   const [assetFiles, setAssetFiles] = useState<FileWithPath[]>([])
-  const [uploadedAssets, setUploadedAssets] = useState<any[]>([])
+  const [uploadedAssets, setUploadedAssets] = useState<{ fileName: string; size: number }[]>([])
 
   const {
     data: module,
@@ -103,7 +103,7 @@ export default function PublishVersionPage() {
     try {
       // Read and parse the manifest file
       const manifestText = await manifestFileWithPath.file.text()
-      const manifest = JSON.parse(manifestText)
+      JSON.parse(manifestText) // Validate JSON
       setManifestData(manifestText)
 
       // Upload all files to blob storage with their relative paths
@@ -146,7 +146,7 @@ export default function PublishVersionPage() {
       let manifest
       try {
         manifest = JSON.parse(manifestData)
-      } catch (err) {
+      } catch {
         setError('Invalid JSON in manifest file')
         setLoading(false)
         return

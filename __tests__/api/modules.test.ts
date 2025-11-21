@@ -91,7 +91,7 @@ describe('GET /api/modules', () => {
     expect(data.modules).toHaveLength(2) // Only active modules
     expect(data.total).toBe(2)
     // Check that both modules are present (order may vary)
-    const names = data.modules.map((m: any) => m.name)
+    const names = data.modules.map((m: { name: string }) => m.name)
     expect(names).toContain('@test/module-1')
     expect(names).toContain('@test/module-2')
     expect(names).not.toContain('@test/module-3')
@@ -407,12 +407,12 @@ describe('POST /api/modules', () => {
   beforeEach(async () => {
     await resetMockDB()
     vi.clearAllMocks()
-    mockAuth.mockResolvedValue(null as any)
+    mockAuth.mockResolvedValue(null)
     process.env.USE_MOCKS = 'true'
   })
 
   it('should require authentication', async () => {
-    mockAuth.mockResolvedValue(null as any)
+    mockAuth.mockResolvedValue(null)
 
     const request = createMockRequest({
       method: 'POST',

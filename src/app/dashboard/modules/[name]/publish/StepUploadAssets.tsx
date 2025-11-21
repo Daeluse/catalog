@@ -2,9 +2,14 @@ import { Card } from '@/components/Card'
 import { Button } from '@/components/Button'
 import { FileUpload, type FileWithPath } from '@/components/FileUpload'
 
+interface UploadedAsset {
+  fileName: string
+  size: number
+}
+
 interface StepUploadAssetsProps {
   assetFiles: FileWithPath[]
-  uploadedAssets: any[]
+  uploadedAssets: UploadedAsset[]
   uploading: boolean
   onFilesSelected: (files: FileWithPath[]) => void
   onUpload: () => void

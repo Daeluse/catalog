@@ -40,7 +40,7 @@ export async function POST(
 
     // Get storage service
     const storage = getBlobStorageService()
-    const uploadedAssets: any[] = []
+    const uploadedAssets: Array<{ relativePath: string; url: string; hash: string; size: number }> = []
 
     // Upload each file with its relative path
     for (let i = 0; i < files.length; i++) {

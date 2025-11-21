@@ -64,7 +64,7 @@ export async function GET(
           }
 
           selectedVersion = validVersions.find((v) => v.version === matchedVersion) || null
-        } catch (err) {
+        } catch {
           return errorResponse(`Invalid semver range: ${tag}`)
         }
       }

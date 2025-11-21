@@ -15,8 +15,18 @@ export type PermissionRole = 'owner' | 'write' | 'read'
  * @param requiredRole - The minimum role required ('owner', 'write', or 'read')
  * @returns true if the user has permission, false otherwise
  */
+interface ModulePermissionData {
+  owner: {
+    userId: string
+  }
+  maintainers?: Array<{
+    userId: string
+    role: 'admin' | 'write' | 'read'
+  }>
+}
+
 export function checkModulePermission(
-  module: any,
+  module: ModulePermissionData,
   userId: string,
   isAdmin: boolean,
   requiredRole: PermissionRole = 'write'
@@ -31,14 +41,14 @@ export function checkModulePermission(
 
   // For write/read permission, check maintainers
   const hasWriteAccess = module.maintainers?.some(
-    (m: any) => m.userId === userId && ['admin', 'write'].includes(m.role)
+    (m) => m.userId === userId && ['admin', 'write'].includes(m.role)
   )
 
   if (requiredRole === 'write') return hasWriteAccess
 
   // For read permission, also check read-only maintainers
   const hasReadAccess = module.maintainers?.some(
-    (m: any) => m.userId === userId && ['admin', 'write', 'read'].includes(m.role)
+    (m) => m.userId === userId && ['admin', 'write', 'read'].includes(m.role)
   )
 
   return hasReadAccess
@@ -50,7 +60,7 @@ export function checkModulePermission(
  */
 export function canApproveSubscription(
   session: Session | null,
-  module: any
+  module: ModulePermissionData
 ): boolean {
   if (!session?.user) return false
   return checkModulePermission(module, session.user.id!, session.user.isAdmin || false, 'write')
@@ -73,7 +83,7 @@ export function isApplicationOwner(
  */
 export function canManageModule(
   session: Session | null,
-  module: any
+  module: ModulePermissionData
 ): boolean {
   if (!session?.user) return false
 
@@ -88,7 +98,7 @@ export function canManageModule(
 
   // Maintainers with admin role can manage
   return module.maintainers?.some(
-    (m: any) => m.userId === userId && m.role === 'admin'
+    (m) => m.userId === userId && m.role === 'admin'
   ) || false
 }
 
@@ -98,7 +108,7 @@ export function canManageModule(
  */
 export function canPublishVersion(
   session: Session | null,
-  module: any
+  module: ModulePermissionData
 ): boolean {
   // Same permissions as approving subscriptions
   return canApproveSubscription(session, module)

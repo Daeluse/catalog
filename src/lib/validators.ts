@@ -91,8 +91,8 @@ export const validationMessages = {
  * Validate multiple fields and return errors
  */
 export function validateFields(
-  fields: Record<string, any>,
-  rules: Record<string, Array<(value: any) => boolean | string>>
+  fields: Record<string, unknown>,
+  rules: Record<string, Array<(value: unknown) => boolean | string>>
 ): Record<string, string> {
   const errors: Record<string, string> = {}
 

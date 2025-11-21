@@ -31,7 +31,7 @@ export function BuildtimeInstallation({
     <div className="space-y-6">
       <div>
         <p className="mb-4 text-sm text-zinc-700 dark:text-zinc-300">
-          Configure remotes at build time using your bundler's Module Federation plugin. Choose your build tool:
+          Configure remotes at build time using your bundler&apos;s Module Federation plugin. Choose your build tool:
         </p>
       </div>
 

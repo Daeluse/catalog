@@ -29,14 +29,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     // Get module to check permissions
-    const module = await findById<ModuleDocument>('modules', subscription.moduleId)
+    const moduleDoc = await findById<ModuleDocument>('modules', subscription.moduleId)
 
-    if (!module) {
+    if (!moduleDoc) {
       return notFoundResponse('Module')
     }
 
     // Check permission
-    if (!canApproveSubscription(session, module)) {
+    if (!canApproveSubscription(session, moduleDoc)) {
       return forbiddenResponse('You do not have permission to approve subscriptions for this module')
     }
 

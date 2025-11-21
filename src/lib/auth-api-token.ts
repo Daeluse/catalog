@@ -3,7 +3,6 @@ import { validateApiToken } from './api-tokens'
 import { checkRateLimit } from './rate-limiter'
 import {
   unauthorizedResponse,
-  forbiddenResponse,
 } from './api-responses'
 
 export interface ApiTokenUser {

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { Session } from 'next-auth'
 import { createMockSession, createMockAdminSession } from '../helpers/mock-auth'
 import { createMockRequest, createMockRequestWithToken } from '../helpers/mock-request'
@@ -41,7 +41,6 @@ import {
   withAuth,
   withAdmin,
   withOptionalAuth,
-  AuthenticatedUser,
 } from '../../src/lib/with-auth'
 
 // Import mocked modules to get access to the mock functions
@@ -59,7 +58,7 @@ describe('with-auth', () => {
   beforeEach(() => {
     // Reset all mocks before each test
     vi.clearAllMocks()
-    mockAuth.mockResolvedValue(null as any)
+    mockAuth.mockResolvedValue(null as unknown as Session)
   })
 
   afterEach(() => {
@@ -116,7 +115,7 @@ describe('with-auth', () => {
   describe('requireAuth - session authentication', () => {
     it('should authenticate with valid session', async () => {
       const session = createMockSession()
-      mockAuth.mockResolvedValue(session as any)
+      mockAuth.mockResolvedValue(session as unknown as Session)
 
       const result = await requireAuth()
 
@@ -129,7 +128,7 @@ describe('with-auth', () => {
     })
 
     it('should return error for unauthenticated session without request', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
 
       const result = await requireAuth()
 
@@ -141,7 +140,7 @@ describe('with-auth', () => {
 
     it('should preserve admin flag from session', async () => {
       const adminSession = createMockAdminSession()
-      mockAuth.mockResolvedValue(adminSession as any)
+      mockAuth.mockResolvedValue(adminSession as unknown as Session)
 
       const result = await requireAuth()
 
@@ -154,7 +153,7 @@ describe('with-auth', () => {
 
   describe('requireAuth - API token authentication', () => {
     it('should authenticate with valid API token', async () => {
-      mockAuth.mockResolvedValue(null as any) // No session
+      mockAuth.mockResolvedValue(null as unknown as Session) // No session
       const request = createMockRequestWithToken('valid-token-123')
 
       mockValidateApiToken.mockResolvedValue({
@@ -190,7 +189,7 @@ describe('with-auth', () => {
     })
 
     it('should return error for invalid API token', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
       const request = createMockRequestWithToken('invalid-token')
 
       mockValidateApiToken.mockResolvedValue(null)
@@ -205,7 +204,7 @@ describe('with-auth', () => {
     })
 
     it('should return 429 error when rate limit exceeded', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
       const request = createMockRequestWithToken('valid-token')
 
       mockValidateApiToken.mockResolvedValue({
@@ -243,7 +242,7 @@ describe('with-auth', () => {
 
     it('should prefer session auth over token auth when both present', async () => {
       const session = createMockSession()
-      mockAuth.mockResolvedValue(session as any)
+      mockAuth.mockResolvedValue(session as unknown as Session)
 
       const request = createMockRequestWithToken('valid-token')
 
@@ -260,7 +259,7 @@ describe('with-auth', () => {
     })
 
     it('should handle missing Authorization header', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
       const request = createMockRequest()
 
       const result = await requireAuth(request)
@@ -269,7 +268,7 @@ describe('with-auth', () => {
     })
 
     it('should handle malformed Authorization header', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
       const request = createMockRequest({
         headers: { authorization: 'InvalidFormat token123' },
       })
@@ -281,7 +280,7 @@ describe('with-auth', () => {
     })
 
     it('should handle Authorization header without Bearer prefix', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
       const request = createMockRequest({
         headers: { authorization: 'token123' },
       })
@@ -296,7 +295,7 @@ describe('with-auth', () => {
   describe('requireAdmin', () => {
     it('should allow admin user via session', async () => {
       const adminSession = createMockAdminSession()
-      mockAuth.mockResolvedValue(adminSession as any)
+      mockAuth.mockResolvedValue(adminSession as unknown as Session)
 
       const result = await requireAdmin()
 
@@ -308,7 +307,7 @@ describe('with-auth', () => {
 
     it('should deny non-admin user via session', async () => {
       const session = createMockSession({ isAdmin: false })
-      mockAuth.mockResolvedValue(session as any)
+      mockAuth.mockResolvedValue(session as unknown as Session)
 
       const result = await requireAdmin()
 
@@ -321,7 +320,7 @@ describe('with-auth', () => {
     })
 
     it('should deny unauthenticated request', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
 
       const result = await requireAdmin()
 
@@ -332,7 +331,7 @@ describe('with-auth', () => {
     })
 
     it('should deny API token users (tokens do not have isAdmin)', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
       const request = createMockRequestWithToken('valid-token')
 
       mockValidateApiToken.mockResolvedValue({
@@ -361,7 +360,7 @@ describe('with-auth', () => {
   describe('optionalAuth', () => {
     it('should return user when authenticated via session', async () => {
       const session = createMockSession()
-      mockAuth.mockResolvedValue(session as any)
+      mockAuth.mockResolvedValue(session as unknown as Session)
 
       const result = await optionalAuth()
 
@@ -371,7 +370,7 @@ describe('with-auth', () => {
     })
 
     it('should return user when authenticated via API token', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
       const request = createMockRequestWithToken('valid-token')
 
       mockValidateApiToken.mockResolvedValue({
@@ -402,7 +401,7 @@ describe('with-auth', () => {
     })
 
     it('should return null when not authenticated', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
 
       const result = await optionalAuth()
 
@@ -412,7 +411,7 @@ describe('with-auth', () => {
     })
 
     it('should never return error (even when rate limited)', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
       const request = createMockRequestWithToken('valid-token')
 
       mockValidateApiToken.mockResolvedValue({
@@ -500,9 +499,9 @@ describe('with-auth', () => {
   describe('withAuth HOF', () => {
     it('should call handler when authenticated via session', async () => {
       const session = createMockSession()
-      mockAuth.mockResolvedValue(session as any)
+      mockAuth.mockResolvedValue(session as unknown as Session)
 
-      const mockHandler = vi.fn(async (req, user, sess) => {
+      const mockHandler = vi.fn(async (_req, user) => {
         return NextResponse.json({ message: `Hello ${user.name}` })
       })
 
@@ -516,7 +515,7 @@ describe('with-auth', () => {
     })
 
     it('should return error when not authenticated', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
 
       const mockHandler = vi.fn()
       const wrappedHandler = withAuth(mockHandler)
@@ -528,7 +527,7 @@ describe('with-auth', () => {
     })
 
     it('should add rate limit headers for API token auth', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
 
       mockValidateApiToken.mockResolvedValue({
         userId: 'user-id',
@@ -564,7 +563,7 @@ describe('with-auth', () => {
 
     it('should not add rate limit headers for session auth', async () => {
       const session = createMockSession()
-      mockAuth.mockResolvedValue(session as any)
+      mockAuth.mockResolvedValue(session as unknown as Session)
 
       const mockHandler = vi.fn(async () => {
         return NextResponse.json({ success: true })
@@ -579,7 +578,7 @@ describe('with-auth', () => {
 
     it('should pass context parameter to handler', async () => {
       const session = createMockSession()
-      mockAuth.mockResolvedValue(session as any)
+      mockAuth.mockResolvedValue(session as unknown as Session)
 
       const mockHandler = vi.fn(async (req, user, sess, ctx) => {
         return NextResponse.json({ params: ctx })
@@ -597,7 +596,7 @@ describe('with-auth', () => {
   describe('withAdmin HOF', () => {
     it('should call handler for admin user', async () => {
       const adminSession = createMockAdminSession()
-      mockAuth.mockResolvedValue(adminSession as any)
+      mockAuth.mockResolvedValue(adminSession as unknown as Session)
 
       const mockHandler = vi.fn(async (req, user) => {
         return NextResponse.json({ message: `Admin: ${user.name}` })
@@ -614,7 +613,7 @@ describe('with-auth', () => {
 
     it('should return 403 for non-admin user', async () => {
       const session = createMockSession({ isAdmin: false })
-      mockAuth.mockResolvedValue(session as any)
+      mockAuth.mockResolvedValue(session as unknown as Session)
 
       const mockHandler = vi.fn()
       const wrappedHandler = withAdmin(mockHandler)
@@ -626,7 +625,7 @@ describe('with-auth', () => {
     })
 
     it('should return 401 for unauthenticated user', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
 
       const mockHandler = vi.fn()
       const wrappedHandler = withAdmin(mockHandler)
@@ -641,9 +640,9 @@ describe('with-auth', () => {
   describe('withOptionalAuth HOF', () => {
     it('should call handler with user when authenticated', async () => {
       const session = createMockSession()
-      mockAuth.mockResolvedValue(session as any)
+      mockAuth.mockResolvedValue(session as unknown as Session)
 
-      const mockHandler = vi.fn(async (req, user, sess) => {
+      const mockHandler = vi.fn(async (_req, user) => {
         return NextResponse.json({ authenticated: user !== null })
       })
 
@@ -657,9 +656,9 @@ describe('with-auth', () => {
     })
 
     it('should call handler with null user when not authenticated', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
 
-      const mockHandler = vi.fn(async (req, user, sess) => {
+      const mockHandler = vi.fn(async (_req, user) => {
         return NextResponse.json({ authenticated: user !== null })
       })
 
@@ -673,7 +672,7 @@ describe('with-auth', () => {
     })
 
     it('should add rate limit headers for token auth', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
 
       mockValidateApiToken.mockResolvedValue({
         userId: 'user-id',
@@ -710,7 +709,7 @@ describe('with-auth', () => {
   describe('edge cases and integration', () => {
     it('should handle concurrent session and token auth correctly', async () => {
       const session = createMockSession({ id: 'session-user' })
-      mockAuth.mockResolvedValue(session as any)
+      mockAuth.mockResolvedValue(session as unknown as Session)
 
       const request = createMockRequestWithToken('some-token')
       const result = await requireAuth(request)
@@ -724,7 +723,7 @@ describe('with-auth', () => {
     })
 
     it('should handle empty bearer token gracefully', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
       const request = createMockRequest({
         headers: { authorization: 'Bearer ' },
       })
@@ -735,7 +734,7 @@ describe('with-auth', () => {
     })
 
     it('should preserve all user properties from API token', async () => {
-      mockAuth.mockResolvedValue(null as any)
+      mockAuth.mockResolvedValue(null as unknown as Session)
 
       mockValidateApiToken.mockResolvedValue({
         userId: 'api-user-123',

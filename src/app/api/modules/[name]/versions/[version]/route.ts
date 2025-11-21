@@ -115,14 +115,14 @@ export async function DELETE(
     const { name, version } = await params
 
     // Find module and check permissions
-    const module = await db.modules.findOne({ name })
+    const moduleDoc = await db.modules.findOne({ name })
     if (!module) {
       return notFoundResponse('Module')
     }
 
     const isAdmin = user.isAdmin || false
-    const isOwner = module.owner.userId === user.id
-    const isMaintainer = module.maintainers?.some(
+    const isOwner = moduleDoc.owner.userId === user.id
+    const isMaintainer = moduleDoc.maintainers?.some(
       (m: ModuleMaintainer) =>
         m.userId === user.id && ['admin', 'write'].includes(m.role)
     )
@@ -148,7 +148,7 @@ export async function DELETE(
     await db.versions.deleteOne({ _id: versionDoc._id })
 
     // Update module's latest version if this was the latest
-    if (module.latestVersion === version) {
+    if (moduleDoc.latestVersion === version) {
       const remainingVersions = await db.versions.find({ moduleName: name })
       if (remainingVersions.length > 0) {
         // Find the latest version from remaining versions

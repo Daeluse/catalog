@@ -20,7 +20,7 @@ class MockDatabase {
       await fs.mkdir(this.dataDir, { recursive: true })
       // Try to load existing data
       await this.loadFromDisk()
-    } catch (error) {
+    } catch {
       console.log('Initializing fresh mock database')
     }
   }
@@ -54,7 +54,7 @@ class MockDatabase {
         }
       }
       console.log('Loaded mock database from disk')
-    } catch (error) {
+    } catch {
       console.log('No existing mock data found')
     }
   }
@@ -128,7 +128,8 @@ class MockCollection<T = Record<string, unknown>> {
       updatedAt: new Date(),
     }
     this.items.set(id, newDoc as Record<string, unknown>)
-    await (this.db as any).saveToDisk(this.name)
+    // Access private method via type assertion
+    await (this.db as unknown as { saveToDisk: (name: string) => Promise<void> }).saveToDisk(this.name)
     return { insertedId: id }
   }
 
@@ -139,7 +140,8 @@ class MockCollection<T = Record<string, unknown>> {
         const updated = this.applyUpdate(item, update)
         updated.updatedAt = new Date()
         this.items.set(id, updated)
-        await (this.db as any).saveToDisk(this.name)
+        // Access private method via type assertion
+        await (this.db as unknown as { saveToDisk: (name: string) => Promise<void> }).saveToDisk(this.name)
         return { modifiedCount: 1 }
       }
     }
@@ -151,7 +153,8 @@ class MockCollection<T = Record<string, unknown>> {
     for (const [id, item] of this.items.entries()) {
       if (this.matches(item, query)) {
         this.items.delete(id)
-        await (this.db as any).saveToDisk(this.name)
+        // Access private method via type assertion
+        await (this.db as unknown as { saveToDisk: (name: string) => Promise<void> }).saveToDisk(this.name)
         return { deletedCount: 1 }
       }
     }
@@ -184,10 +187,10 @@ class MockCollection<T = Record<string, unknown>> {
       if (key.includes('.')) {
         // Handle nested paths like "owner.userId"
         const keys = key.split('.')
-        let current: any = item
+        let current: unknown = item
         for (const k of keys) {
           if (current && typeof current === 'object') {
-            current = current[k]
+            current = (current as Record<string, unknown>)[k]
           } else {
             return false
           }
@@ -202,11 +205,11 @@ class MockCollection<T = Record<string, unknown>> {
           const regex = new RegExp(String(operator.$regex), String(operator.$options || ''))
           if (!regex.test(String(item[key] || ''))) return false
         } else if ('$gt' in operator || '$gte' in operator || '$lt' in operator || '$lte' in operator) {
-          const itemValue = item[key] as any
-          if ('$gt' in operator && !(itemValue > (operator.$gt as any))) return false
-          if ('$gte' in operator && !(itemValue >= (operator.$gte as any))) return false
-          if ('$lt' in operator && !(itemValue < (operator.$lt as any))) return false
-          if ('$lte' in operator && !(itemValue <= (operator.$lte as any))) return false
+          const itemValue = item[key] as number | Date
+          if ('$gt' in operator && !(itemValue > (operator.$gt as number | Date))) return false
+          if ('$gte' in operator && !(itemValue >= (operator.$gte as number | Date))) return false
+          if ('$lt' in operator && !(itemValue < (operator.$lt as number | Date))) return false
+          if ('$lte' in operator && !(itemValue <= (operator.$lte as number | Date))) return false
         }
       } else if (item[key] !== value) {
         return false
@@ -238,16 +241,19 @@ class MockCollection<T = Record<string, unknown>> {
     return result
   }
 
-  // Chainable query methods for Mongoose compatibility
-  sort(sortSpec: MongoSortSpec) {
+  // Chainable query methods for Mongoose compatibility (unused but required for compatibility)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  sort(_sortSpec: MongoSortSpec) {
     return this
   }
 
-  limit(n: number) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  limit(_n: number) {
     return this
   }
 
-  skip(n: number) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  skip(_n: number) {
     return this
   }
 }

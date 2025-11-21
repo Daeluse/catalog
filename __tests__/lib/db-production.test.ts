@@ -29,7 +29,7 @@ describe('db (production mode)', () => {
     // Mock mongoose.connect
     const mockConnect = vi.spyOn(mongoose, 'connect').mockResolvedValue({
       connections: [{ readyState: 1 }],
-    } as any)
+    } as unknown as typeof mongoose)
 
     // Import after setting environment
     const { connectDB } = await import('../../src/lib/db')
@@ -47,7 +47,7 @@ describe('db (production mode)', () => {
 
     const mockConnect = vi.spyOn(mongoose, 'connect').mockResolvedValue({
       connections: [{ readyState: 1 }],
-    } as any)
+    } as unknown as typeof mongoose)
 
     const { connectDB } = await import('../../src/lib/db')
 
@@ -64,7 +64,7 @@ describe('db (production mode)', () => {
   it('should not reconnect if already connected', async () => {
     const mockConnect = vi.spyOn(mongoose, 'connect').mockResolvedValue({
       connections: [{ readyState: 1 }],
-    } as any)
+    } as unknown as typeof mongoose)
 
     const { connectDB } = await import('../../src/lib/db')
 
@@ -77,9 +77,7 @@ describe('db (production mode)', () => {
 
   it('should throw error on connection failure', async () => {
     const error = new Error('Connection failed')
-    const mockConnect = vi
-      .spyOn(mongoose, 'connect')
-      .mockRejectedValue(error)
+    vi.spyOn(mongoose, 'connect').mockRejectedValue(error)
 
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 

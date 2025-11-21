@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import type { Session } from 'next-auth'
 import { GET, POST } from '../../src/app/api/applications/route'
 import { GET as GET_BY_ID, PATCH, DELETE } from '../../src/app/api/applications/[id]/route'
 import { createMockRequest, createMockRequestWithToken } from '../helpers/mock-request'
@@ -378,7 +379,7 @@ describe('GET /api/applications/[id]', () => {
         name: 'User',
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    } as any)
+    } as Session)
 
     const request = createMockRequest({
       url: `http://localhost:3000/api/applications/${result.insertedId}`,
@@ -490,7 +491,7 @@ describe('PATCH /api/applications/[id]', () => {
         name: 'User',
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    } as any)
+    } as Session)
 
     const request = createMockRequest({
       method: 'PATCH',
@@ -639,7 +640,7 @@ describe('DELETE /api/applications/[id]', () => {
         name: 'User',
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    } as any)
+    } as Session)
 
     const request = createMockRequest({
       method: 'DELETE',
@@ -687,7 +688,7 @@ describe('DELETE /api/applications/[id]', () => {
         name: 'User',
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    } as any)
+    } as Session)
 
     const request = createMockRequest({
       method: 'DELETE',

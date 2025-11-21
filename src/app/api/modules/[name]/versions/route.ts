@@ -81,13 +81,13 @@ export async function POST(
     }
 
     // Find module and check permissions
-    const module = await db.modules.findOne({ name })
+    const moduleDoc = await db.modules.findOne({ name })
     if (!module) {
       return notFoundResponse('Module')
     }
 
     const isAdmin = user.isAdmin || false
-    const hasPermission = checkModulePermission(module, user.id, isAdmin, 'write')
+    const hasPermission = checkModulePermission(moduleDoc, user.id, isAdmin, 'write')
 
     if (!hasPermission) {
       return forbiddenResponse('Insufficient permissions to publish versions for this module')
@@ -105,7 +105,7 @@ export async function POST(
 
     // Create new version
     const newVersion = {
-      moduleId: module._id,
+      moduleId: moduleDoc._id,
       moduleName: name,
       version,
       federation,
@@ -130,7 +130,7 @@ export async function POST(
     const result = await db.versions.insertOne(newVersion)
 
     // Update module's latest version if this is newer
-    if (!module.latestVersion || semver.gt(version, module.latestVersion)) {
+    if (!moduleDoc.latestVersion || semver.gt(version, moduleDoc.latestVersion)) {
       await db.modules.updateOne(
         { name },
         {

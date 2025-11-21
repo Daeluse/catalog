@@ -29,7 +29,7 @@ const useMocks = process.env.USE_MOCKS === 'true'
 class CollectionAdapter<T> {
   constructor(
     private collectionName: string,
-    private model?: Model<any>
+    private model?: Model<T>
   ) {}
 
   private getMockCollection() {
@@ -47,9 +47,9 @@ class CollectionAdapter<T> {
         const sortEntries = Object.entries(options.sort)
         if (sortEntries.length > 0) {
           const [field, order] = sortEntries[0]
-          results.sort((a: any, b: any) => {
-            const aVal = a[field]
-            const bVal = b[field]
+          results.sort((a, b) => {
+            const aVal = (a as Record<string, unknown>)[field]
+            const bVal = (b as Record<string, unknown>)[field]
             if (aVal === bVal) return 0
             if (aVal == null) return 1
             if (bVal == null) return -1
@@ -80,7 +80,7 @@ class CollectionAdapter<T> {
       if (options?.limit) queryBuilder = queryBuilder.limit(options.limit)
       if (options?.skip) queryBuilder = queryBuilder.skip(options.skip)
 
-      return await queryBuilder.lean() as any
+      return await queryBuilder.lean() as (T & { _id: string; createdAt: Date; updatedAt: Date })[]
     }
   }
 
@@ -91,7 +91,7 @@ class CollectionAdapter<T> {
     } else {
       if (!this.model) throw new Error('Mongoose model not provided')
       await connectDB()
-      return await this.model.findOne(query).lean() as any
+      return await this.model.findOne(query).lean() as (T & { _id: string; createdAt: Date; updatedAt: Date }) | null
     }
   }
 
@@ -167,10 +167,10 @@ export async function findById<T>(
   if (useMocks) {
     const mockDb = getMockDatabase()
     const collection = mockDb.collection(collectionName)
-    return await collection.findOne({ _id: id }) as any
+    return await collection.findOne({ _id: id }) as unknown as T | null
   } else {
     await connectDB()
-    const models: Record<string, any> = {
+    const models: Record<string, Model<unknown>> = {
       modules: Module,
       versions: Version,
       applications: Application,
@@ -179,6 +179,6 @@ export async function findById<T>(
     }
     const model = models[collectionName]
     const result = await model.findById(id)
-    return result ? result.toObject() : null
+    return result ? (result.toObject() as T) : null
   }
 }

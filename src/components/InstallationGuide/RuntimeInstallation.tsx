@@ -31,7 +31,7 @@ export function RuntimeInstallation({
     <div className="space-y-6">
       <div>
         <p className="mb-4 text-sm text-zinc-700 dark:text-zinc-300">
-          Use Module Federation runtime to dynamically load remotes at runtime. This approach doesn't require configuring remotes during build.
+          Use Module Federation runtime to dynamically load remotes at runtime. This approach doesn&apos;t require configuring remotes during build.
         </p>
       </div>
 
@@ -166,7 +166,7 @@ function MyComponent() {
         {showAdvanced && (
           <div className="mt-4 space-y-4 rounded-md border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
             <p className="text-sm text-zinc-700 dark:text-zinc-300">
-              Instead of hardcoding version URLs, you can use the catalog's version resolution API to dynamically resolve version tags:
+              Instead of hardcoding version URLs, you can use the catalog&apos;s version resolution API to dynamically resolve version tags:
             </p>
 
             <div>

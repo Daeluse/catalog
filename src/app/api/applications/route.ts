@@ -9,7 +9,7 @@ import {
 import { validators, validationMessages } from '@/lib/validators'
 import { requireAuth, isAuthError } from '@/lib/with-auth'
 import { db } from '@/lib/db-adapter'
-import { getPaginationParams, createPaginatedResponse } from '@/lib/pagination'
+import { getPaginationParams } from '@/lib/pagination'
 
 // GET /api/applications - List user's applications (authenticated)
 export async function GET(request: NextRequest) {

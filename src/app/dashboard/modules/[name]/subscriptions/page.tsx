@@ -44,7 +44,8 @@ export default function ModuleSubscriptionsPage() {
 
   const loading = moduleLoading || subsLoading
   const error = moduleError || subsError
-  const subscriptions = subsData?.subscriptions || []
+
+  const subscriptions = useMemo(() => subsData?.subscriptions || [], [subsData])
 
   const filteredSubscriptions = useMemo(() => {
     if (statusFilter === 'all') return subscriptions

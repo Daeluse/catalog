@@ -184,7 +184,7 @@ describe('createPaginatedResponse', () => {
   })
 
   it('should handle empty items array', () => {
-    const items: any[] = []
+    const items: unknown[] = []
     const total = 0
     const params = { limit: 20, skip: 0 }
 
