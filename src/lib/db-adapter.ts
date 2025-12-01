@@ -5,6 +5,7 @@
 
 import { connectDB } from './db'
 import { getMockDatabase } from './db-mock'
+import { env } from './env'
 import {
   ModuleDocument,
   VersionDocument,
@@ -21,8 +22,6 @@ import {
 import { Module, Version, Application, Subscription, ApiToken } from '@/models'
 import { Model } from 'mongoose'
 
-const useMocks = process.env.USE_MOCKS === 'true'
-
 /**
  * Collection wrapper that works with both mock and real databases
  */
@@ -38,7 +37,7 @@ class CollectionAdapter<T> {
   }
 
   async find(query: MongoQuery = {}, options?: FindOptions): Promise<(T & { _id: string; createdAt: Date; updatedAt: Date })[]> {
-    if (useMocks) {
+    if (env.useMocks) {
       const collection = this.getMockCollection()
       let results = await collection.find(query)
 
@@ -85,7 +84,7 @@ class CollectionAdapter<T> {
   }
 
   async findOne(query: MongoQuery): Promise<(T & { _id: string; createdAt: Date; updatedAt: Date }) | null> {
-    if (useMocks) {
+    if (env.useMocks) {
       const collection = this.getMockCollection()
       return await collection.findOne(query)
     } else {
@@ -96,7 +95,7 @@ class CollectionAdapter<T> {
   }
 
   async insertOne(doc: Partial<T> & Record<string, unknown>): Promise<InsertResult> {
-    if (useMocks) {
+    if (env.useMocks) {
       const collection = this.getMockCollection()
       return await collection.insertOne(doc)
     } else {
@@ -108,7 +107,7 @@ class CollectionAdapter<T> {
   }
 
   async updateOne(query: MongoQuery, update: MongoUpdate<T>): Promise<UpdateResult> {
-    if (useMocks) {
+    if (env.useMocks) {
       const collection = this.getMockCollection()
       return await collection.updateOne(query, update)
     } else {
@@ -123,7 +122,7 @@ class CollectionAdapter<T> {
   }
 
   async deleteOne(query: MongoQuery): Promise<DeleteResult> {
-    if (useMocks) {
+    if (env.useMocks) {
       const collection = this.getMockCollection()
       return await collection.deleteOne(query)
     } else {
@@ -135,7 +134,7 @@ class CollectionAdapter<T> {
   }
 
   async countDocuments(query: MongoQuery = {}): Promise<number> {
-    if (useMocks) {
+    if (env.useMocks) {
       const collection = this.getMockCollection()
       return await collection.countDocuments(query)
     } else {
@@ -164,7 +163,7 @@ export async function findById<T>(
   collectionName: 'modules' | 'versions' | 'applications' | 'subscriptions' | 'apitokens',
   id: string
 ): Promise<T | null> {
-  if (useMocks) {
+  if (env.useMocks) {
     const mockDb = getMockDatabase()
     const collection = mockDb.collection(collectionName)
     return await collection.findOne({ _id: id }) as unknown as T | null

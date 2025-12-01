@@ -1,12 +1,11 @@
 import mongoose from 'mongoose'
 import { getMockDatabase } from './db-mock'
-
-const useMocks = process.env.USE_MOCKS === 'true'
+import { env } from './env'
 
 let isConnected = false
 
 export async function connectDB() {
-  if (useMocks) {
+  if (env.useMocks) {
     // Using mock database - no connection needed
     return getMockDatabase()
   }
@@ -16,8 +15,8 @@ export async function connectDB() {
   }
 
   try {
-    const db = await mongoose.connect(process.env.MONGODB_URI!, {
-      dbName: process.env.MONGODB_DB || 'catalog',
+    const db = await mongoose.connect(env.mongodbUri, {
+      dbName: env.mongodbDb,
     })
 
     isConnected = db.connections[0].readyState === 1

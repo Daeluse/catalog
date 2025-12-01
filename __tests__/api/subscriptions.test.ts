@@ -441,7 +441,7 @@ describe('POST /api/subscriptions', () => {
 
     expect(response.status).toBe(201)
     expect(data.applicationId).toBe(app.insertedId)
-    expect(data.moduleId).toBe(module.insertedId)
+    expect(data.moduleId).toBe(moduleData.insertedId)
     expect(data.moduleName).toBe('@test/my-module')
     expect(data.status).toBe('pending')
     expect(data.requestedBy.userId).toBe('user-123')

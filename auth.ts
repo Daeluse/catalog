@@ -3,8 +3,7 @@ import AzureADProvider from "next-auth/providers/azure-ad"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import clientPromise from "@/lib/mongodb"
-
-const useMocks = process.env.USE_MOCKS === 'true'
+import { env } from "@/lib/env"
 
 // Mock users for local development
 const mockUsers = [
@@ -35,10 +34,10 @@ const mockUsers = [
 ]
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
-  adapter: useMocks ? undefined : MongoDBAdapter(clientPromise, {
-    databaseName: process.env.MONGODB_DB || "catalog",
+  adapter: env.useMocks ? undefined : MongoDBAdapter(clientPromise, {
+    databaseName: env.mongodbDb,
   }),
-  providers: useMocks
+  providers: env.useMocks
     ? [
         CredentialsProvider({
           name: "Mock Login",
@@ -65,9 +64,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       ]
     : [
         AzureADProvider({
-          clientId: process.env.AZURE_AD_CLIENT_ID!,
-          clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
-          issuer: `https://login.microsoftonline.com/${process.env.AZURE_AD_TENANT_ID}/v2.0`,
+          clientId: env.azureAdClientId,
+          clientSecret: env.azureAdClientSecret,
+          issuer: `https://login.microsoftonline.com/${env.azureAdTenantId}/v2.0`,
           authorization: {
             params: {
               scope: "openid profile email User.Read",
@@ -78,7 +77,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   callbacks: {
     async session({ session, user, token }) {
       // Add user ID and isAdmin to session for use in API routes
-      if (useMocks && token) {
+      if (env.useMocks && token) {
         session.user.id = token.sub || "1"
         session.user.isAdmin = token.isAdmin as boolean || false
       } else if (user) {
@@ -100,7 +99,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     error: "/auth/error",
   },
   session: {
-    strategy: useMocks ? "jwt" : "database",
+    strategy: env.useMocks ? "jwt" : "database",
   },
-  debug: process.env.NODE_ENV === "development",
+  debug: env.isDevelopment,
 })

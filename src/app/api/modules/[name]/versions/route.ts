@@ -82,7 +82,7 @@ export async function POST(
 
     // Find module and check permissions
     const moduleDoc = await db.modules.findOne({ name })
-    if (!module) {
+    if (!moduleDoc) {
       return notFoundResponse('Module')
     }
 

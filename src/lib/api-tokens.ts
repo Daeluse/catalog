@@ -2,10 +2,9 @@ import { connectDB } from './db'
 import { ApiToken } from '@/models'
 import { getMockDatabase } from './db-mock'
 import { ApiTokenDocument } from '@/types/database'
+import { env } from './env'
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
-
-const useMocks = process.env.USE_MOCKS === 'true'
 
 /**
  * Generate a cryptographically secure API token
@@ -58,7 +57,7 @@ export async function createApiToken(
     status: 'active' as const,
   }
 
-  if (useMocks) {
+  if (env.useMocks) {
     const db = getMockDatabase()
     const tokensCollection = db.collection('apitokens')
     const result = await tokensCollection.insertOne(tokenData)
@@ -86,7 +85,7 @@ export async function validateApiToken(token: string): Promise<{
   }
 
   try {
-    if (useMocks) {
+    if (env.useMocks) {
       const db = getMockDatabase()
       const tokensCollection = db.collection<ApiTokenDocument>('apitokens')
       const allTokens = await tokensCollection.find({ status: 'active' })
@@ -163,7 +162,7 @@ export async function revokeApiToken(
   userId: string
 ): Promise<boolean> {
   try {
-    if (useMocks) {
+    if (env.useMocks) {
       const db = getMockDatabase()
       const tokensCollection = db.collection<ApiTokenDocument>('apitokens')
 
@@ -196,7 +195,7 @@ export async function revokeApiToken(
  */
 export async function listApiTokens(userId: string): Promise<ApiTokenDocument[]> {
   try {
-    if (useMocks) {
+    if (env.useMocks) {
       const db = getMockDatabase()
       const tokensCollection = db.collection<ApiTokenDocument>('apitokens')
       return await tokensCollection.find({ userId })

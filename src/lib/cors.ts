@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/db'
 import { Application, Subscription } from '@/models'
 import { getMockDatabase } from '@/lib/db-mock'
-
-const useMocks = process.env.USE_MOCKS === 'true'
+import { env } from './env'
 
 /**
  * Check if an origin is approved to access a module's assets
@@ -16,7 +15,7 @@ export async function checkOriginApproval(
   if (!origin) return null
 
   try {
-    if (useMocks) {
+    if (env.useMocks) {
       const db = getMockDatabase()
       const subscriptionsCollection = db.collection('subscriptions')
       const applicationsCollection = db.collection('applications')

@@ -1,22 +1,21 @@
 import { MongoClient } from 'mongodb'
-
-const useMocks = process.env.USE_MOCKS === 'true'
+import { env } from './env'
 
 let clientPromise: Promise<MongoClient>
 
-if (useMocks) {
+if (env.useMocks) {
   // If using mocks, export a dummy promise
   const dummyClient = {} as MongoClient
   clientPromise = Promise.resolve(dummyClient)
 } else {
-  if (!process.env.MONGODB_URI) {
+  if (!env.mongodbUri) {
     throw new Error('Please add your MongoDB URI to .env.local')
   }
 
-  const uri = process.env.MONGODB_URI
+  const uri = env.mongodbUri
   const options = {}
 
-  if (process.env.NODE_ENV === 'development') {
+  if (env.isDevelopment) {
     // In development mode, use a global variable so that the value
     // is preserved across module reloads caused by HMR (Hot Module Replacement).
     const globalWithMongo = global as typeof globalThis & {

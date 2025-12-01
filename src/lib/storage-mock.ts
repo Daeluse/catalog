@@ -1,9 +1,10 @@
 import fs from 'fs/promises'
 import path from 'path'
 import crypto from 'crypto'
+import { env } from './env'
 
 // Mock Azure Blob Storage using local file system
-class MockBlobStorage {
+export class MockBlobStorage {
   private storagePath: string
 
   constructor(storagePath: string = './storage') {
@@ -200,8 +201,7 @@ let mockStorage: MockBlobStorage | null = null
 
 export function getMockBlobStorage(): MockBlobStorage {
   if (!mockStorage) {
-    const storagePath = process.env.LOCAL_STORAGE_PATH || './storage'
-    mockStorage = new MockBlobStorage(storagePath)
+    mockStorage = new MockBlobStorage(env.localStoragePath)
   }
   return mockStorage
 }

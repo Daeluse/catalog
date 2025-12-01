@@ -1,22 +1,28 @@
 import { BlobServiceClient, ContainerClient } from '@azure/storage-blob'
-import { getMockBlobStorage } from './storage-mock'
-
-const useMocks = process.env.USE_MOCKS === 'true'
+import { getMockBlobStorage, MockBlobStorage } from './storage-mock'
+import { env } from './env'
 
 class BlobStorageService {
   private containerClient: ContainerClient | null = null
-  private mockStorage = useMocks ? getMockBlobStorage() : null
+  private _mockStorage: MockBlobStorage | null = null
+
+  private getMockStorage(): MockBlobStorage {
+    if (!this._mockStorage) {
+      this._mockStorage = getMockBlobStorage()
+    }
+    return this._mockStorage
+  }
 
   constructor() {
-    if (!useMocks) {
+    if (!env.useMocks) {
       this.initializeAzureStorage()
     }
   }
 
   private async initializeAzureStorage() {
     try {
-      const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING!
-      const containerName = process.env.AZURE_STORAGE_CONTAINER || 'catalog-modules'
+      const connectionString = env.azureStorageConnectionString
+      const containerName = env.azureStorageContainer
 
       const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
       this.containerClient = blobServiceClient.getContainerClient(containerName)
@@ -44,9 +50,9 @@ class BlobStorageService {
     hash: string
     size: number
   }> {
-    if (useMocks && this.mockStorage) {
-      const containerName = process.env.AZURE_STORAGE_CONTAINER || 'catalog-modules'
-      return await this.mockStorage.uploadBlob(containerName, blobPath, data, {
+    if (env.useMocks) {
+      const mockStorage = this.getMockStorage()
+      return await mockStorage.uploadBlob(env.azureStorageContainer, blobPath, data, {
         contentType: options?.contentType,
         metadata: options?.metadata,
       })
@@ -87,9 +93,9 @@ class BlobStorageService {
     contentType?: string
     metadata?: Record<string, string>
   } | null> {
-    if (useMocks && this.mockStorage) {
-      const containerName = process.env.AZURE_STORAGE_CONTAINER || 'catalog-modules'
-      return await this.mockStorage.downloadBlob(containerName, blobPath)
+    if (env.useMocks) {
+      const mockStorage = this.getMockStorage()
+      return await mockStorage.downloadBlob(env.azureStorageContainer, blobPath)
     }
 
     // Azure Blob Storage implementation
@@ -124,9 +130,9 @@ class BlobStorageService {
   }
 
   async deleteBlob(blobPath: string): Promise<boolean> {
-    if (useMocks && this.mockStorage) {
-      const containerName = process.env.AZURE_STORAGE_CONTAINER || 'catalog-modules'
-      return await this.mockStorage.deleteBlob(containerName, blobPath)
+    if (env.useMocks) {
+      const mockStorage = this.getMockStorage()
+      return await mockStorage.deleteBlob(env.azureStorageContainer, blobPath)
     }
 
     // Azure Blob Storage implementation
@@ -145,9 +151,9 @@ class BlobStorageService {
   }
 
   async listBlobs(prefix?: string): Promise<Array<{ name: string; size: number }>> {
-    if (useMocks && this.mockStorage) {
-      const containerName = process.env.AZURE_STORAGE_CONTAINER || 'catalog-modules'
-      return await this.mockStorage.listBlobs(containerName, prefix)
+    if (env.useMocks) {
+      const mockStorage = this.getMockStorage()
+      return await mockStorage.listBlobs(env.azureStorageContainer, prefix)
     }
 
     // Azure Blob Storage implementation
@@ -175,9 +181,9 @@ class BlobStorageService {
   }
 
   getPublicUrl(blobPath: string): string {
-    if (useMocks && this.mockStorage) {
-      const containerName = process.env.AZURE_STORAGE_CONTAINER || 'catalog-modules'
-      return this.mockStorage.getPublicUrl(containerName, blobPath)
+    if (env.useMocks) {
+      const mockStorage = this.getMockStorage()
+      return mockStorage.getPublicUrl(env.azureStorageContainer, blobPath)
     }
 
     // Azure Blob Storage implementation
@@ -188,7 +194,7 @@ class BlobStorageService {
     const blockBlobClient = this.containerClient.getBlockBlobClient(blobPath)
 
     // Use CDN URL if configured
-    const cdnUrl = process.env.AZURE_STORAGE_CDN_URL
+    const cdnUrl = env.azureStorageCdnUrl
     if (cdnUrl) {
       return `${cdnUrl}/${blobPath}`
     }

@@ -21,7 +21,7 @@ export async function GET(
 
     const moduleDoc = await db.modules.findOne({ name })
 
-    if (!module) {
+    if (!moduleDoc) {
       return notFoundResponse('Module')
     }
 
@@ -48,7 +48,7 @@ export async function PATCH(
 
     const moduleDoc = await db.modules.findOne({ name })
 
-    if (!module) {
+    if (!moduleDoc) {
       return notFoundResponse('Module')
     }
 
@@ -105,7 +105,7 @@ export async function DELETE(
 
     const moduleDoc = await db.modules.findOne({ name })
 
-    if (!module) {
+    if (!moduleDoc) {
       return notFoundResponse('Module')
     }
 
