@@ -40,7 +40,7 @@ export default function Home() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <div className="mb-12 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
             Module Federation Catalog
           </h1>
           <p className="mt-4 text-lg text-zinc-600">
@@ -94,7 +94,7 @@ export default function Home() {
                   placeholder="Search modules by name, description, or keywords..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="block w-full rounded-md border border-zinc-300 bg-white py-2 pl-10 pr-3 text-sm placeholder-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 "
+                  className="block w-full rounded-md border border-zinc-300 bg-white py-2 pl-10 pr-3 text-sm placeholder-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
                 />
               </div>
             </div>

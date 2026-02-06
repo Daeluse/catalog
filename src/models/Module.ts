@@ -9,7 +9,7 @@ export interface IModule extends Document {
   repository?: string;
   homepage?: string;
   keywords: string[];
-  category: string;
+  category: "navigation" | "ui" | "shared" | "feature" | "utility" | "other";
   icon?: string;
   status: "active" | "deprecated" | "archived";
   owner: Owner;

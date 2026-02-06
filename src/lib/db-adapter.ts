@@ -122,7 +122,7 @@ class CollectionAdapter<T> {
       await connectDB();
       const created = (await this.model.create(doc)) as T & {
         _id: string;
-      }
+      };
       return { insertedId: created._id.toString() };
     }
   }

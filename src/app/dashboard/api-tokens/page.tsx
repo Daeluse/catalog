@@ -489,11 +489,11 @@ function ApiDocumentation() {
           <section>
             <h3 className="text-xl font-semibold mb-3">1. Create Module</h3>
             <p className="text-gray-600">
-              <code className="bg-gray-100">POST /api/v1/modules</code>
+              <code className="bg-gray-100">POST /api/modules</code>
             </p>
             <CodeBlock
               id="create-module"
-              code={`curl -X POST https://your-catalog.com/api/v1/modules \\
+              code={`curl -X POST https://your-catalog.com/api/modules \\
   -H "Authorization: Bearer YOUR_API_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -520,7 +520,7 @@ function ApiDocumentation() {
             </p>
             <CodeBlock
               id="upload-assets"
-              code={`curl -X POST https://your-catalog.com/api/v1/modules/my-module/versions \\
+              code={`curl -X POST https://your-catalog.com/api/modules/my-module/versions \\
   -H "Authorization: Bearer YOUR_API_TOKEN" \\
   -F "version=1.0.0" \\
   -F "files=remoteEntry.js" \\
@@ -537,12 +537,12 @@ function ApiDocumentation() {
             <h3 className="text-xl font-semibold mb-3">3. Publish Version</h3>
             <p className="text-gray-600">
               <code className="bg-gray-100">
-                POST /api/v1/modules/[name]/versions
+                POST /api/modules/[name]/versions
               </code>
             </p>
             <CodeBlock
               id="publish-version"
-              code={`curl -X POST https://your-catalog.com/api/v1/modules/@myorg/my-module/versions \\
+              code={`curl -X POST https://your-catalog.com/api/modules/@myorg/my-module/versions \\
   -H "Authorization: Bearer YOUR_API_TOKEN" \\
   -F "version=1.0.0" \\
   -F "buildTool=webpack" \\

@@ -371,7 +371,7 @@ export function FileUpload({
                 <button
                   type="button"
                   onClick={() => removeFile(index)}
-                  className="ml-4 shrink-0 text-zinc-400 hover:text-red-600 "
+                  className="ml-4 shrink-0 text-zinc-400 hover:text-red-600"
                 >
                   <svg
                     className="h-5 w-5"

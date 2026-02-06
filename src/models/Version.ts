@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface FederationExpose {
   import: string;
@@ -93,8 +93,8 @@ const VersionSchema = new Schema<IVersion>(
     version: { type: String, required: true },
     federation: {
       name: { type: String, required: true },
-      entry: { type: String, required: true },
-      manifestUrl: { type: String, required: true },
+      entry: { type: String },
+      manifestUrl: { type: String },
       exposes: { type: Schema.Types.Mixed, default: {} },
       shared: { type: Schema.Types.Mixed, default: {} },
       remotes: { type: Schema.Types.Mixed },
@@ -107,9 +107,9 @@ const VersionSchema = new Schema<IVersion>(
           required: true,
         },
         remoteTypes: { type: String },
-        publicPath: { type: String, required: true },
-        pluginVersion: { type: String, required: true },
-        buildTime: { type: Date, required: true },
+        publicPath: { type: String },
+        pluginVersion: { type: String },
+        buildTime: { type: Date },
       },
     },
     assets: {
