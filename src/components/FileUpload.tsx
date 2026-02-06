@@ -261,7 +261,7 @@ export function FileUpload({
         })),
       );
     },
-    [files, onFilesSelected],
+    [files, onFilesSelected, getRelativePath],
   );
 
   return (

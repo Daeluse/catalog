@@ -25,7 +25,7 @@ export default function MarkdownComponent(props: MDXProps) {
 
   useEffect(() => {
     compileMarkdown(props).then((result) => setMarkdown(result));
-  }, [props.content]);
+  }, [props]);
 
   return (
     <div className="markdown-body">{Markdown ? <Markdown /> : <p>...</p>}</div>
