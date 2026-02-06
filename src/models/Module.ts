@@ -1,5 +1,5 @@
 import { Owner, Maintainer } from "@/types/api";
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IModule extends Document {
   name: string;
@@ -11,7 +11,7 @@ export interface IModule extends Document {
   keywords: string[];
   category: string;
   icon?: string;
-  status: 'active' | 'deprecated' | 'archived';
+  status: "active" | "deprecated" | "archived";
   owner: Owner;
   maintainers: Maintainer[];
   latestVersion?: string;
@@ -39,8 +39,8 @@ const ModuleSchema = new Schema<IModule>(
     icon: { type: String },
     status: {
       type: String,
-      enum: ['active', 'deprecated', 'archived'],
-      default: 'active',
+      enum: ["active", "deprecated", "archived"],
+      default: "active",
     },
     owner: {
       userId: { type: String, required: true },
@@ -54,8 +54,8 @@ const ModuleSchema = new Schema<IModule>(
         name: { type: String, required: true },
         role: {
           type: String,
-          enum: ['admin', 'write', 'read'],
-          default: 'write',
+          enum: ["admin", "write", "read"],
+          default: "write",
         },
         addedAt: { type: Date, default: Date.now },
       },
@@ -67,15 +67,15 @@ const ModuleSchema = new Schema<IModule>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes (name index is automatically created via unique: true)
 ModuleSchema.index({ organization: 1, createdAt: -1 });
 ModuleSchema.index({ keywords: 1 });
 ModuleSchema.index({ category: 1 });
-ModuleSchema.index({ 'owner.userId': 1 });
-ModuleSchema.index({ name: 'text', displayName: 'text', description: 'text' });
+ModuleSchema.index({ "owner.userId": 1 });
+ModuleSchema.index({ name: "text", displayName: "text", description: "text" });
 
-export const Module = 
-  mongoose.models.ModuleV2 || mongoose.model<IModule>('ModuleV2', ModuleSchema);
+export const Module =
+  mongoose.models.ModuleV2 || mongoose.model<IModule>("ModuleV2", ModuleSchema);

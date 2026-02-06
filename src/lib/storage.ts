@@ -1,7 +1,7 @@
 import { ClientSecretCredential } from "@azure/identity";
 import { BlobServiceClient, ContainerClient } from "@azure/storage-blob";
-import { getMockBlobStorage, MockBlobStorage } from "./storage-mock";
-import { env } from "./env";
+import { getMockBlobStorage, MockBlobStorage } from "@/lib/storage-mock";
+import { env } from "@/lib/env";
 
 class BlobStorageService {
   private containerClient: ContainerClient | null = null;

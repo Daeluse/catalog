@@ -117,9 +117,9 @@ export async function apiDelete<T = void>(
   url: string,
   options?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(url, {
+  const response = await fetch(`${url}/delete`, {
     ...options,
-    method: "DELETE",
+    method: "POST",
   });
 
   return handleResponse<T>(response);

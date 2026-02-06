@@ -86,7 +86,7 @@ export async function resolveTag(
         const versionStrings = validVersions.map((v) => v.version);
         const matchedVersion = semver.maxSatisfying(versionStrings, tag);
 
-        if (!matchedVersion) {
+        if (matchedVersion == null) {
           throw new ResolveNotFoundError(
             `No version matches the range: ${tag}`,
           );

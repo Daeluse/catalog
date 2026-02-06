@@ -1,5 +1,5 @@
 import { SubscriptionStatus } from "@/lib/constants";
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface RequestedBy {
   userId: string;
@@ -20,7 +20,7 @@ export interface ISubscription extends Document {
   status: SubscriptionStatus;
   requestedBy: RequestedBy;
   requestedAt: Date;
-  reviewedBy?: ReviewedBy,
+  reviewedBy?: ReviewedBy;
   reviewedAt?: Date;
   reviewNotes?: string;
   createdAt: Date;
@@ -32,12 +32,12 @@ const SubscriptionSchema = new Schema<ISubscription>(
     applicationId: {
       type: String,
       required: true,
-      ref: 'Application',
+      ref: "Application",
     },
     moduleId: {
       type: String,
       required: true,
-      ref: 'Module',
+      ref: "Module",
     },
     moduleName: {
       type: String,
@@ -45,8 +45,8 @@ const SubscriptionSchema = new Schema<ISubscription>(
     },
     status: {
       type: String,
-      enum: ['pending', 'approved', 'rejected', 'revoked'],
-      default: 'pending',
+      enum: ["pending", "approved", "rejected", "revoked"],
+      default: "pending",
     },
     requestedBy: {
       userId: { type: String, required: true },
@@ -71,7 +71,7 @@ const SubscriptionSchema = new Schema<ISubscription>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for efficient querying
@@ -79,7 +79,7 @@ SubscriptionSchema.index({ applicationId: 1 });
 SubscriptionSchema.index({ moduleId: 1 });
 SubscriptionSchema.index({ moduleName: 1 });
 SubscriptionSchema.index({ status: 1 });
-SubscriptionSchema.index({ 'requestedBy.userId': 1 });
+SubscriptionSchema.index({ "requestedBy.userId": 1 });
 
 // Compound index for CORS lookups (module + approved status)
 SubscriptionSchema.index({ moduleName: 1, status: 1 });
@@ -89,4 +89,4 @@ SubscriptionSchema.index({ applicationId: 1, moduleId: 1 }, { unique: true });
 
 export const Subscription =
   mongoose.models.SubscriptionV2 ||
-  mongoose.model<ISubscription>('SubscriptionV2', SubscriptionSchema);
+  mongoose.model<ISubscription>("SubscriptionV2", SubscriptionSchema);

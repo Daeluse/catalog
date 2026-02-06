@@ -173,7 +173,7 @@ export default function ApiTokensPage() {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">API Tokens</h1>
+        <h1 className="text-3xl font-bold text-gray-900">API Tokens</h1>
         <p className="text-gray-600">
           Generate API tokens for CI/CD pipelines to publish modules
           programmatically
@@ -182,12 +182,12 @@ export default function ApiTokensPage() {
 
       {/* Tabs */}
       <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
+        <nav className="flex space-x-8">
           <button
             onClick={() => setActiveTab("tokens")}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === "tokens"
-                ? "border-blue-500 text-blue-600"
+                ? "border-accent-primary-1 text-accent-primary-1"
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
@@ -198,7 +198,7 @@ export default function ApiTokensPage() {
             onClick={() => setActiveTab("docs")}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === "docs"
-                ? "border-blue-500 text-blue-600"
+                ? "border-accent-primary-1 text-accent-primary-1"
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
@@ -220,17 +220,17 @@ export default function ApiTokensPage() {
           {newToken && (
             <Card className="mb-6 bg-yellow-50">
               <div className="flex items-start space-x-3">
-                <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-yellow-600" />
                 <div className="flex-1">
-                  <h3 className="font-semibold text-yellow-800mb-2">
+                  <h3 className="font-semibold text-yellow-800">
                     Save your API token
                   </h3>
-                  <p className="text-sm text-yellow-700mb-4">
+                  <p className="text-sm text-yellow-700">
                     This token will only be shown once. Make sure to copy it
                     now.
                   </p>
                   <div className="flex items-center space-x-2">
-                    <code className="flex-1 bg-whitebreak-all">{newToken}</code>
+                    <code className="flex-1 bg-white">{newToken}</code>
                     <Button
                       onClick={handleCopyToken}
                       variant="secondary"
@@ -278,7 +278,7 @@ export default function ApiTokensPage() {
                 {createError && <ErrorMessage error={createError} />}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700mb-1">
+                  <label className="block text-sm font-medium text-gray-700">
                     Token Name
                   </label>
                   <Input
@@ -287,13 +287,13 @@ export default function ApiTokensPage() {
                     placeholder="e.g., GitHub Actions Deploy"
                     required
                   />
-                  <p className="text-sm text-gray-500mt-1">
+                  <p className="text-sm text-gray-500">
                     A descriptive name to help you identify this token
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700mb-1">
+                  <label className="block text-sm font-medium text-gray-700">
                     Expiration
                   </label>
                   <Select
@@ -307,7 +307,7 @@ export default function ApiTokensPage() {
                     ]}
                     required
                   />
-                  <p className="text-sm text-gray-500mt-1">
+                  <p className="text-sm text-gray-500">
                     Tokens automatically expire for security. Create a new one
                     when needed.
                   </p>
@@ -338,7 +338,7 @@ export default function ApiTokensPage() {
           <Card>
             <h2 className="text-xl font-semibold mb-4">Your API Tokens</h2>
             {tokens.length === 0 ? (
-              <p className="text-gray-500py-8">
+              <p className="text-gray-500">
                 No API tokens yet. Create one to get started.
               </p>
             ) : (
@@ -346,22 +346,22 @@ export default function ApiTokensPage() {
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500uppercase">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">
                         Name
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500uppercase">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500uppercase">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">
                         Created
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500uppercase">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">
                         Last Used
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500uppercase">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">
                         Expires
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500uppercase">
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">
                         Actions
                       </th>
                     </tr>
@@ -398,7 +398,7 @@ export default function ApiTokensPage() {
                           {token.status === "active" && (
                             <button
                               onClick={() => setRevokeTokenId(token._id)}
-                              className="text-red-600 hover:text-red-800 "
+                              className="text-red-600 hover:text-red-800"
                             >
                               <Trash2 className="w-4 h-4 inline" />
                             </button>
@@ -444,7 +444,7 @@ function ApiDocumentation() {
     <div className="space-y-8">
       <Card>
         <h2 className="text-2xl font-bold mb-4">API Documentation</h2>
-        <p className="text-gray-600mb-4">
+        <p className="text-gray-600">
           Use these API endpoints to publish modules from your CI/CD pipeline.
         </p>
 
@@ -452,7 +452,7 @@ function ApiDocumentation() {
           {/* Authentication */}
           <section>
             <h3 className="text-xl font-semibold mb-3">Authentication</h3>
-            <p className="text-gray-600mb-3">
+            <p className="text-gray-600">
               Include your API token in the Authorization header:
             </p>
             <CodeBlock
@@ -470,7 +470,7 @@ function ApiDocumentation() {
               API tokens are limited to <strong>100 requests per hour</strong>.
               Rate limit information is included in response headers:
             </p>
-            <ul className="list-disc list-inside text-gray-600space-y-1">
+            <ul className="list-disc list-inside text-gray-600">
               <li>
                 <code>X-RateLimit-Limit</code>: Total requests allowed per hour
               </li>
@@ -488,8 +488,8 @@ function ApiDocumentation() {
           {/* Create Module */}
           <section>
             <h3 className="text-xl font-semibold mb-3">1. Create Module</h3>
-            <p className="text-gray-600mb-3">
-              <code className="bg-gray-100rounded">POST /api/v1/modules</code>
+            <p className="text-gray-600">
+              <code className="bg-gray-100">POST /api/v1/modules</code>
             </p>
             <CodeBlock
               id="create-module"
@@ -526,7 +526,7 @@ function ApiDocumentation() {
   -F "files=remoteEntry.js" \\
   -F "files=mf-manifest.json" \\
   -F "paths=dist/remoteEntry.js" \\
-  -F "paths=dist/mf-maniifest.json"`}
+  -F "paths=dist/mf-manifest.json"`}
               copied={copied}
               onCopy={copyCode}
             />
@@ -535,8 +535,8 @@ function ApiDocumentation() {
           {/* Publish Version */}
           <section>
             <h3 className="text-xl font-semibold mb-3">3. Publish Version</h3>
-            <p className="text-gray-600mb-3">
-              <code className="bg-gray-100rounded">
+            <p className="text-gray-600">
+              <code className="bg-gray-100">
                 POST /api/v1/modules/[name]/versions
               </code>
             </p>
@@ -560,7 +560,7 @@ function ApiDocumentation() {
             <h3 className="text-xl font-semibold mb-3">
               Security Best Practices
             </h3>
-            <ul className="list-disc list-inside text-gray-600space-y-2">
+            <ul className="list-disc list-inside text-gray-600">
               <li>Never commit API tokens to version control</li>
               <li>Store tokens as environment variables or CI/CD secrets</li>
               <li>
@@ -576,7 +576,7 @@ function ApiDocumentation() {
           <section>
             <h3 className="text-xl font-semibold mb-3">Error Handling</h3>
             <p className="text-gray-600mb-3">Common HTTP status codes:</p>
-            <ul className="list-disc list-inside text-gray-600space-y-2">
+            <ul className="list-disc list-inside text-gray-600">
               <li>
                 <strong>200 OK</strong>: Request successful
               </li>

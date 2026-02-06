@@ -34,7 +34,7 @@ export function Header() {
             ) : session ? (
               <>
                 <div>
-                  <p className="cursor-pointer hover:border-">
+                  <p className="cursor-pointer hover:border-b">
                     <Link href="/documentation/producers">Get started</Link>
                   </p>
                 </div>
@@ -59,7 +59,7 @@ export function Header() {
                         { label: "Dashboard", href: "/dashboard" },
                         {
                           label: "Applications",
-                          href: "/dashboard/appliciations",
+                          href: "/dashboard/applications",
                         },
                         {
                           label: "Subscriptions",

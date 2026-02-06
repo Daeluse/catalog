@@ -106,7 +106,7 @@ export function FileUpload({
       onFilesSelected(
         updatedFiles.map((f) => ({
           file: f.file,
-          relativePath: f.relativePath,
+          relativePath: getRelativePath(f.file),
         })),
       );
     },
@@ -257,7 +257,7 @@ export function FileUpload({
       onFilesSelected(
         updatedFiles.map((f) => ({
           file: f.file,
-          relativePath: f.relativePath,
+          relativePath: getRelativePath(f.file),
         })),
       );
     },
@@ -283,7 +283,7 @@ export function FileUpload({
         onDrop={handleDrop}
         className={`relative rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
           isDragging
-            ? "border-zinc-900 bg-zinc-100 "
+            ? "border-zinc-900 bg-zinc-100"
             : "border-zinc-300 bg-white"
         }`}
       >
@@ -347,7 +347,7 @@ export function FileUpload({
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <svg
-                    className="h-5 w-5 flex-shrink-0 text-zinc-400"
+                    className="h-5 w-5 shrink-0 text-zinc-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -371,7 +371,7 @@ export function FileUpload({
                 <button
                   type="button"
                   onClick={() => removeFile(index)}
-                  className="ml-4 flex-shrink-0 text-zinc-400 hover:text-red-600 "
+                  className="ml-4 shrink-0 text-zinc-400 hover:text-red-600 "
                 >
                   <svg
                     className="h-5 w-5"

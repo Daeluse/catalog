@@ -81,10 +81,10 @@ export async function POST(request: NextRequest) {
       organization,
       repository,
       homepage,
-      license,
       keywords,
       category,
       icon,
+      readme,
     } = body;
 
     // Validate required fields
@@ -123,7 +123,6 @@ export async function POST(request: NextRequest) {
       organization,
       repository,
       homepage,
-      license,
       keywords: keywords || [],
       category,
       icon,
@@ -133,6 +132,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         name: user.name,
       },
+      readme,
       maintainers: [],
       totalDownloads: 0,
       weeklyDownloads: 0,

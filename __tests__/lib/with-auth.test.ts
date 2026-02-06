@@ -11,7 +11,7 @@ import {
 } from "../helpers/mock-request";
 
 // Mock modules before importing the module under test
-vi.mock("../../auth", () => ({
+vi.mock("../../src/lib/auth", () => ({
   auth: vi.fn(() => Promise.resolve(null)),
   signIn: vi.fn(),
   signOut: vi.fn(),

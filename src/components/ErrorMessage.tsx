@@ -15,14 +15,14 @@ export function ErrorMessage({
 
   return (
     <div
-      className={`rounded-lg border border-red-200 bg-red-50 p-4${className}`}
+      className={`rounded-lg border border-red-200 bg-red-50 p-4 ${className}`}
     >
       <div className="flex items-start justify-between gap-3">
         <p className="flex-1 text-sm text-red-800">{error}</p>
         {onDismiss && (
           <button
             onClick={onDismiss}
-            className="rounded p-0.5 text-red-600 hover:bg-red-100 "
+            className="rounded p-0.5 text-red-600 hover:bg-red-100"
             aria-label="Dismiss error"
           >
             <X className="h-4 w-4" />

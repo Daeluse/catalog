@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config({ path: "./src/vault/.env.vault.catalog-comp" });
 
 const withMDX = createMDX({
-  //Markdown plugins go here
+  // Markdown plugins go here
 });
 
 /** @type {import('next').NextConfig} */
@@ -44,13 +44,13 @@ const nextConfig = {
           {
             from: "./**/*",
             to: "../public/assets/",
-            context: "./node_modules/@nucleus/assets",
+            context: "./node_modules/@nucleus/assets/",
           },
         ],
       }),
     );
     config.module.rules = [
-      ...config.modulel.rules,
+      ...config.module.rules,
       {
         test: /\.csv$/,
         loader: "csv-loader",
@@ -65,7 +65,7 @@ const nextConfig = {
         use: {
           loader: "url-loader",
           options: {
-            limit:100000,
+            limit: 100000,
           },
         },
       },
@@ -86,6 +86,5 @@ const nextConfig = {
     return config;
   },
 };
-
 
 export default withMDX(nextConfig);

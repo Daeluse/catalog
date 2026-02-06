@@ -14,7 +14,6 @@ const eslintConfig = defineConfig([
       "dist/**",
       "node_modules/**",
       "coverage/**",
-      "coverage/**/*",
       "mock-data/**",
       "storage/**",
       "test-storage/**",

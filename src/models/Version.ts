@@ -1,11 +1,11 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface FederationExpose {
   import: string;
   name: string;
   assets: {
-    js: { async: string[]; sync: string[]; };
-    css: { async: string[]; sync: string[]; };
+    js: { async: string[]; sync: string[] };
+    css: { async: string[]; sync: string[] };
   };
 }
 
@@ -18,8 +18,8 @@ export interface FederationShare {
   eager?: boolean;
   shareScope?: string;
   assets: {
-    js: { async: string[]; sync: string[]; };
-    css: { async: string[]; sync: string[]; };
+    js: { async: string[]; sync: string[] };
+    css: { async: string[]; sync: string[] };
   };
 }
 
@@ -28,7 +28,7 @@ export type FederationShared = Record<string, FederationShare>;
 export interface FederationBuildMeta {
   buildVersion: string;
   globalName: string;
-  remoteEntryType: 'esm' | 'cjs' | 'umd';
+  remoteEntryType: "esm" | "cjs" | "umd";
   remoteTypes?: string;
   publicPath: string;
   pluginVersion: string;
@@ -70,7 +70,7 @@ export interface IVersion extends Document {
   version: string;
   federation: Federation;
   assets: Assets;
-  buildTool: 'webpack' | 'rspack' | 'rsbuild' | 'vite';
+  buildTool: "webpack" | "rspack" | "rsbuild" | "vite";
   buildToolVersion: string;
   readme?: string;
   changelog?: string;
@@ -103,7 +103,7 @@ const VersionSchema = new Schema<IVersion>(
         globalName: { type: String, required: true },
         remoteEntryType: {
           type: String,
-          enum: ['esm', 'cjs', 'umd'],
+          enum: ["esm", "cjs", "umd"],
           required: true,
         },
         remoteTypes: { type: String },
@@ -131,12 +131,12 @@ const VersionSchema = new Schema<IVersion>(
           hash: { type: String, required: true },
           size: { type: Number, required: true },
           url: { type: String, required: true },
-        }
-      ]
+        },
+      ],
     },
     buildTool: {
       type: String,
-      enum: ['webpack', 'rspack', 'rsbuild', 'vite'],
+      enum: ["webpack", "rspack", "rsbuild", "vite"],
       required: true,
     },
     buildToolVersion: { type: String, required: true },
@@ -157,18 +157,18 @@ const VersionSchema = new Schema<IVersion>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes
 VersionSchema.index({ moduleId: 1, version: -1 });
 VersionSchema.index({ moduleName: 1, version: -1 });
 VersionSchema.index({ publishedAt: -1 });
-VersionSchema.index({ 'federation.shared': 1 });
+VersionSchema.index({ "federation.shared": 1 });
 
 // Compound unique index
 VersionSchema.index({ moduleId: 1, version: 1 }, { unique: true });
 
 export const Version =
   mongoose.models.VersionV2 ||
-  mongoose.model<IVersion>('VersionV2', VersionSchema);
+  mongoose.model<IVersion>("VersionV2", VersionSchema);

@@ -17,9 +17,9 @@ export interface ModuleUpdates {
   repository?: string;
   homepage?: string;
   keywords?: string[];
-  status?: 'active' | 'deprecated' | 'archived';
+  status?: "active" | "deprecated" | "archived";
   latestVersion?: string;
-  $inc?: { totalDownloads?: number; };
+  $inc?: { totalDownloads?: number };
 }
 
 // ============================================================================
@@ -37,8 +37,8 @@ export interface VersionQuery {
 // ============================================================================
 
 export interface ApplicationQuery {
-  'owner.userId'?: string;
-  status?: 'active' | 'suspended';
+  "owner.userId"?: string;
+  status?: "active" | "suspended";
   _id?: string;
 }
 
@@ -47,7 +47,7 @@ export interface ApplicationUpdates {
   description?: string;
   contactEmail?: string;
   origins?: string[];
-  status?: 'active' | 'suspended';
+  status?: "active" | "suspended";
 }
 
 // ============================================================================
@@ -57,12 +57,12 @@ export interface ApplicationUpdates {
 export interface SubscriptionQuery {
   applicationId?: string;
   moduleId?: string;
-  status?: 'pending' | 'approved' | 'rejected' | 'revoked';
+  status?: "pending" | "approved" | "rejected" | "revoked";
   _id?: string;
 }
 
 export interface SubscriptionUpdates {
-  status?: 'pending' | 'approved' | 'rejected' | 'revoked';
+  status?: "pending" | "approved" | "rejected" | "revoked";
   reviewedBy?: Owner;
   reviewedAt?: Date;
   reviewNotes?: string;
@@ -74,7 +74,7 @@ export interface SubscriptionUpdates {
 
 export interface ApiTokenQuery {
   userId?: string;
-  status?: 'active' | 'revoked';
+  status?: "active" | "revoked";
   _id?: string;
 }
 
@@ -91,7 +91,7 @@ export interface MongoUpdate<T = Record<string, unknown>> {
   $inc?: Record<string, number>;
   $push?: Record<string, unknown>;
   $pull?: Record<string, unknown>;
-  $unset?: Record<string, '' | 1 | true>;
+  $unset?: Record<string, "" | 1 | true>;
 }
 
 export interface MongoSortSpec {

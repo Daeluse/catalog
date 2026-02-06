@@ -9,7 +9,7 @@ export interface Owner {
 }
 
 export interface Maintainer extends Owner {
-  role: 'admin' | 'write' | 'read';
+  role: "admin" | "write" | "read";
   addedAt: Date | string;
 }
 
@@ -47,7 +47,7 @@ export interface ModuleFilters {
   search?: string;
   category?: string;
   organization?: string;
-  sort?: 'updated' | 'downloads' | 'name';
+  sort?: "updated" | "downloads" | "name";
   limit?: number;
   skip?: number;
 }

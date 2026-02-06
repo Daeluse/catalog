@@ -46,7 +46,7 @@ export default function StepUploadAssets({
 
         <FileUpload
           onFilesSelected={onFilesSelected}
-          accept=".js,.json,.map,.css,.woff,.woff2,.ttf,.eot,.svg,.png,.jpg,.jpeg,.gif,.html"
+          accept=".js,.json,.map,.css,.woff,.woff2,.ttf,.eot,.svg,.png,.jpg,.jpeg,.gif,.html,.ts,.txt,.md"
           maxFiles={100}
           maxSize={25}
           multiple={true}

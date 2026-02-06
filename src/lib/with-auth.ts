@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "./auth";
+import { auth } from "@/lib/auth";
 import { Session } from "next-auth";
 import { unauthorizedResponse } from "./api-responses";
 import { validateApiToken } from "./api-tokens";

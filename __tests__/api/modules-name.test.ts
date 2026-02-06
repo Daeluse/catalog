@@ -9,7 +9,7 @@ import { resetMockDB, testData } from "../helpers/mock-db";
 import { db } from "../../src/lib/db-adapter";
 
 // Mock auth module
-vi.mock("../../auth", () => ({
+vi.mock("../../src/lib/auth", () => ({
   auth: vi.fn(() => Promise.resolve(null)),
   signIn: vi.fn(),
   signOut: vi.fn(),

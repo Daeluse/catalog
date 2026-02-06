@@ -34,7 +34,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, user, token }) {
+    async session({ session, token }) {
       // Add user ID and isAdmin to session for use in API routes
       if (token) {
         session.user.id = token.sub || "1";

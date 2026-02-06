@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 import { Owner } from "@/types/api";
 
 export interface IApplication extends Document {
@@ -7,7 +7,7 @@ export interface IApplication extends Document {
   contactEmail: string;
   owner: Owner;
   origins: string[];
-  status: 'active' | 'suspended';
+  status: "active" | "suspended";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,24 +41,24 @@ const ApplicationSchema = new Schema<IApplication>(
         validator: function (origins: string[]) {
           return origins.length > 0;
         },
-        message: 'At least one origin is required',
+        message: "At least one origin is required",
       },
     },
     status: {
       type: String,
-      enum: ['active', 'suspended'],
-      default: 'active',
+      enum: ["active", "suspended"],
+      default: "active",
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Index for querying by owner
-ApplicationSchema.index({ 'owner.userId': 1 });
+ApplicationSchema.index({ "owner.userId": 1 });
 ApplicationSchema.index({ status: 1 });
 
 export const Application =
-  mongoose.models.Application ||
-  mongoose.model<IApplication>('Application', ApplicationSchema);
+  mongoose.models.ApplicationV2 ||
+  mongoose.model<IApplication>("ApplicationV2", ApplicationSchema);

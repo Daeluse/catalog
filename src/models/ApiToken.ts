@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IApiToken extends Document {
   name: string;
@@ -8,7 +8,7 @@ export interface IApiToken extends Document {
   userName: string;
   expiresAt: Date;
   lastUsedAt?: Date;
-  status: 'active' | 'revoked';
+  status: "active" | "revoked";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,14 +48,14 @@ const ApiTokenSchema = new Schema<IApiToken>(
     },
     status: {
       type: String,
-      enum: ['active', 'revoked'],
-      default: 'active',
+      enum: ["active", "revoked"],
+      default: "active",
       index: true,
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Compound index for efficient lookups
@@ -63,5 +63,5 @@ ApiTokenSchema.index({ userId: 1, status: 1 });
 ApiTokenSchema.index({ tokenHash: 1, status: 1 });
 
 export const ApiToken =
-  mongoose.models.ApiToken ||
-  mongoose.model<IApiToken>('ApiToken', ApiTokenSchema);
+  mongoose.models.ApiTokenV2 ||
+  mongoose.model<IApiToken>("ApiTokenV2", ApiTokenSchema);

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { connectDB } from "@/lib/db";
 import { getMockDatabase } from "@/lib/db-mock";
-import { env } from "./env";
+import { env } from "@/lib/env";
 
 import { Application, Subscription } from "@/models";
 

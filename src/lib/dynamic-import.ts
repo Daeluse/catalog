@@ -1,1 +1,1 @@
-export const dynamicImpoty = async (path: string) => import(path);
+export const dynamicImport = async (path: string) => import(path);

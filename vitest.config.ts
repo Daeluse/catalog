@@ -1,29 +1,29 @@
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import path from "path";
 
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'happy-dom',
+    environment: "happy-dom",
     globals: true,
-    setupFiles: ['./__tests__/setup.ts'],
+    setupFiles: ["./__tests__/setup.ts"],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      provider: "v8",
+      reporter: ["text", "json", "html", "lcov"],
       exclude: [
-        'node_modules/',
-        '__tests__/',
-        '__mocks__/',
-        '**/*.d.ts',
-        '**/*.config.*',
-        '**/mock-data/',
-        '**/storage/',
-        'dist/',
-        '.next/',
-        'src/app/**/layout.tsx', // Layout files are mostly wrapper components
-        'src/app/**/page.tsx', // Page components will be tested via integration tests
-        'src/app/api/auth/**', // NextAuth internals
+        "node_modules/",
+        "__tests__/",
+        "__mocks__/",
+        "**/*.d.ts",
+        "**/*.config.*",
+        "**/mock-data/",
+        "**/storage/",
+        "dist/",
+        ".next/",
+        "src/app/**/layout.tsx", // Layout files are mostly wrapper components
+        "src/app/**/page.tsx", // Page components will be tested via integration tests
+        "src/app/api/auth/**", // NextAuth internals
       ],
       thresholds: {
         lines: 80,
@@ -35,7 +35,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
-})
+});
