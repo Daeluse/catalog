@@ -39,36 +39,38 @@ export default async function Page({
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 bg-zinc-50">
-      <div className="flex gap-8">
-        <nav className="hidden w-56 shrink-0 md:block">
-          <div className="sticky top-8">
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Documentation
-            </h2>
-            <ul className="space-y-1">
-              {docPages.map((page) => (
-                <li key={page.slug}>
-                  <Link
-                    href={`/documentation/${page.slug}`}
-                    className={`block rounded-md px-3 py-2 text-sm transition-colors ${
-                      slug === page.slug
-                        ? "bg-zinc-900 font-medium text-white"
-                        : "text-zinc-700 hover:bg-zinc-200"
-                    }`}
-                  >
-                    {page.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </nav>
+    <main className="min-h-screen bg-zinc-50">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="flex gap-8">
+          <nav className="hidden w-56 shrink-0 md:block">
+            <div className="sticky top-8">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Documentation
+              </h2>
+              <ul className="space-y-1">
+                {docPages.map((page) => (
+                  <li key={page.slug}>
+                    <Link
+                      href={`/documentation/${page.slug}`}
+                      className={`block rounded-md px-3 py-2 text-sm transition-colors ${
+                        slug === page.slug
+                          ? "bg-zinc-900 font-medium text-white"
+                          : "text-zinc-700 hover:bg-zinc-200"
+                      }`}
+                    >
+                      {page.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </nav>
 
-        <div className="min-w-0 flex-1 markdown-body">
-          <Card>
-            <MarkdownComponent content={content}></MarkdownComponent>
-          </Card>
+          <div className="min-w-0 flex-1 markdown-body">
+            <Card>
+              <MarkdownComponent content={content}></MarkdownComponent>
+            </Card>
+          </div>
         </div>
       </div>
     </main>

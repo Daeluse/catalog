@@ -575,7 +575,7 @@ function ApiDocumentation() {
           {/* Error Handling */}
           <section>
             <h3 className="text-xl font-semibold mb-3">Error Handling</h3>
-            <p className="text-gray-600mb-3">Common HTTP status codes:</p>
+            <p className="text-gray-600">Common HTTP status codes:</p>
             <ul className="list-disc list-inside text-gray-600">
               <li>
                 <strong>200 OK</strong>: Request successful

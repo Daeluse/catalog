@@ -105,7 +105,6 @@ describe("GET /api/modules/[name]", () => {
         keywords: ["test", "example"],
         repository: "https://github.com/test/repo",
         homepage: "https://test.com",
-        license: "MIT",
         status: "active",
       }),
     );
@@ -124,7 +123,6 @@ describe("GET /api/modules/[name]", () => {
     expect(data.category).toBe("utility");
     expect(data.keywords).toEqual(["test", "example"]);
     expect(data.repository).toBe("https://github.com/test/repo");
-    expect(data.license).toBe("MIT");
   });
 });
 
@@ -329,7 +327,6 @@ describe("PATCH /api/modules/[name]", () => {
         description: "New description",
         repository: "https://github.com/new/repo",
         homepage: "https://new.com",
-        license: "Apache-2.0",
         keywords: ["new", "keywords"],
         category: "ui",
         icon: "https://new.com/icon.png",
