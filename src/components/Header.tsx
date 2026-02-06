@@ -1,80 +1,112 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useSession, signOut } from "next-auth/react"
+import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import { useState } from "react";
+import { useSession, signOut, signIn } from "next-auth/react";
+import { ChevronDown } from "lucide-react";
+
+import { Button } from "@/components/Button";
 
 export function Header() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   return (
-    <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+    <header className="border-b border-zinc-200 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Link href="/" className="text-xl font-bold text-zinc-900 dark:text-white">
+            <Link href="/" className="text-xl font-bold text-zinc-900">
               Module Federation Catalog
             </Link>
           </div>
 
           <nav className="flex items-center space-x-4">
-            <Link
-              href="/"
-              className="text-sm font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-            >
-              Catalog
-            </Link>
-
-            {status === "loading" ? (
-              <div className="h-8 w-20 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+            { status === "loading" ? (
+              <div className="h-8 w-20 animate-pulse rounded bg-zinc-200" />
             ) : session ? (
               <>
-                <Link
-                  href="/dashboard"
-                  className="text-sm font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/dashboard/applications"
-                  className="text-sm font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-                >
-                  Applications
-                </Link>
-                <Link
-                  href="/dashboard/subscriptions"
-                  className="text-sm font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-                >
-                  Subscriptions
-                </Link>
-                <Link
-                  href="/dashboard/api-tokens"
-                  className="text-sm font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-                >
-                  API Tokens
-                </Link>
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                    {session.user?.name || session.user?.email}
-                  </span>
-                  <button
-                    onClick={() => signOut()}
-                    className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-                  >
-                    Sign out
-                  </button>
+                <div>
+                  <p className="cursor-pointer hover:border-">
+                    <Link href="/documentation/producers">Get started</Link>
+                  </p>
                 </div>
+
+                <DropdownMenu
+                  open={userMenuOpen}
+                  onOpenChange={() => setUserMenuOpen(!userMenuOpen)}
+                >
+                  <DropdownMenuTrigger asChild>
+                    <p className="cursor-pointer hover:border-b text-zinc-600">
+                      {session.user?.name || session.user?.email}
+                      <ChevronDown className="inline" color="#999" size={22} />
+                    </p>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuPortal>
+                    <DropdownMenuContent
+                      className="bg-white p-4 pr-8 mr-2 border border-gray-200 rounded shadow-lg"
+                      sideOffset={5}
+                    >
+                      {[
+                        { label: "Dashboard", href: "/dashboard" },
+                        {
+                          label: "Applications",
+                          href: "/dashboard/appliciations",
+                        },
+                        {
+                          label: "Subscriptions",
+                          href: "/dashboard/subscriptions",
+                        },
+                        {
+                          label: "API Tokens",
+                          href: "/dashboard/api-tokens",
+                        },
+                      ].map((menuItem) => (
+                        <DropdownMenuItem
+                          key={menuItem.label}
+                        >
+                          <p className="hover:bg-zinc-200 p-1">
+                            <Link
+                              href={menuItem.href}
+                              className="font-medium text-zinc-700"
+                              onNavigate={() => setUserMenuOpen(!userMenuOpen)}
+                            >
+                              {menuItem.label}
+                            </Link>
+                          </p>
+                        </DropdownMenuItem>
+                      ))}
+
+                      <div className="my-2 border-b border-gray-400"></div>
+
+                      <Button onClick={() => signOut()} size="sm">
+                        Sign out
+                      </Button>
+                    </DropdownMenuContent>
+                  </DropdownMenuPortal>
+                </DropdownMenu>
               </>
             ) : (
-              <Link
-                href="/auth/signin"
-                className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              <Button
+                onClick={() =>
+                  signIn("microsoft-entra-id", { redirectTo: "/" })
+                }
+                size="sm"
               >
                 Sign in
-              </Link>
-            )}
+              </Button>
+            ) }
           </nav>
         </div>
       </div>
     </header>
-  )
+  );
 }

@@ -1,80 +1,84 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
-import { ErrorMessage } from '@/components/ErrorMessage'
-import { Button } from '@/components/Button'
-import { Card } from '@/components/Card'
-import { FormField, Input, TextArea, Select } from '@/components/form'
-import { useRequireAuth } from '@/hooks/useRequireAuth'
-import { apiPost } from '@/lib/api-client'
-import { MODULE_CATEGORIES, LICENSES } from '@/lib/constants'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { ErrorMessage } from "@/components/ErrorMessage";
+import { Button } from "@/components/Button";
+import { Card } from "@/components/Card";
+import { FormField, Input, TextArea, Select } from "@/components/form";
+import { apiPost } from "@/lib/api-client";
+import { MODULE_CATEGORIES } from "@/lib/constants";
 
 export default function NewModulePage() {
-  useRequireAuth()
-
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
-    name: '',
-    displayName: '',
-    description: '',
-    organization: '',
-    category: '',
-    repository: '',
-    homepage: '',
-    license: 'MIT',
-    keywords: '',
-  })
+    name: "",
+    displayName: "",
+    description: "",
+    organization: "",
+    category: "",
+    repository: "",
+    homepage: "",
+    keywords: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
-      const data = await apiPost('/api/modules', {
+      const data = (await apiPost("/api/modules", {
         ...formData,
         keywords: formData.keywords
-          .split(',')
+          .split(",")
           .map((k) => k.trim())
           .filter(Boolean),
-      }) as { name: string }
-      router.push(`/modules/${data.name}`)
+      })) as { name: string };
+      router.push(`/modules/${data.name}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while creating the module')
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An error occurred while creating the module",
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
-    }))
-  }
+    }));
+  };
 
   return (
-    <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <main className="min-h-screen bg-zinc-50">
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/dashboard"
-            className="mb-4 inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+            className="mb-4 inline-flex items-center gap-2 text-sm text-zinc-600 hover:text-zinc-900"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Create New Module</h1>
-          <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+          <h1 className="text-3xl font-bold text-zinc-900">
+            Create New Module
+          </h1>
+          <p className="mt-2 text-zinc-600">
             Register a new Module Federation module in the catalog
           </p>
         </div>
@@ -84,7 +88,7 @@ export default function NewModulePage() {
           <ErrorMessage error={error} />
 
           <Card className="p-6">
-            <h2 className="mb-6 text-xl font-semibold text-zinc-900 dark:text-white">
+            <h2 className="mb-6 text-xl font-semibold text-zinc-900">
               Basic Information
             </h2>
 
@@ -168,7 +172,7 @@ export default function NewModulePage() {
           </Card>
 
           <Card className="p-6">
-            <h2 className="mb-6 text-xl font-semibold text-zinc-900 dark:text-white">
+            <h2 className="mb-6 text-xl font-semibold text-zinc-900">
               Additional Information
             </h2>
 
@@ -194,16 +198,6 @@ export default function NewModulePage() {
                   placeholder="https://myorg.com/header"
                 />
               </FormField>
-
-              <FormField label="License" htmlFor="license">
-                <Select
-                  id="license"
-                  name="license"
-                  value={formData.license}
-                  onChange={handleChange}
-                  options={LICENSES}
-                />
-              </FormField>
             </div>
           </Card>
 
@@ -213,11 +207,11 @@ export default function NewModulePage() {
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Module'}
+              {loading ? "Creating..." : "Create Module"}
             </Button>
           </div>
         </form>
       </div>
     </main>
-  )
+  );
 }

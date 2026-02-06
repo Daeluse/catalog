@@ -3,9 +3,9 @@
  * Consolidated from authorization.ts to eliminate duplication
  */
 
-import { Session } from 'next-auth'
+import { Session } from "next-auth";
 
-export type PermissionRole = 'owner' | 'write' | 'read'
+export type PermissionRole = "owner" | "write" | "read";
 
 /**
  * Check if a user has permission to perform an action on a module
@@ -17,41 +17,43 @@ export type PermissionRole = 'owner' | 'write' | 'read'
  */
 interface ModulePermissionData {
   owner: {
-    userId: string
-  }
+    userId: string;
+  };
   maintainers?: Array<{
-    userId: string
-    role: 'admin' | 'write' | 'read'
-  }>
+    userId: string;
+    role: "admin" | "write" | "read";
+  }>;
 }
 
 export function checkModulePermission(
   module: ModulePermissionData,
   userId: string,
   isAdmin: boolean,
-  requiredRole: PermissionRole = 'write'
+  requiredRole: PermissionRole = "write",
 ): boolean {
-  const isOwner = module.owner.userId === userId
+  const isOwner = module.owner.userId === userId;
 
   // Admins and owners always have full access
-  if (isAdmin || isOwner) return true
+  if (isAdmin || isOwner) return true;
 
   // If owner is required, deny
-  if (requiredRole === 'owner') return false
+  if (requiredRole === "owner") return false;
 
   // For write/read permission, check maintainers
   const hasWriteAccess = module.maintainers?.some(
-    (m) => m.userId === userId && ['admin', 'write'].includes(m.role)
-  )
+    (m) => m.userId === userId && ["admin", "write"].includes(m.role),
+  );
 
-  if (requiredRole === 'write') return hasWriteAccess
+  if (requiredRole === "write") {
+    return !!hasWriteAccess;
+  }
 
   // For read permission, also check read-only maintainers
   const hasReadAccess = module.maintainers?.some(
-    (m) => m.userId === userId && ['admin', 'write', 'read'].includes(m.role)
-  )
+    (m) => m.userId === userId && ["admin", "write", "read"].includes(m.role),
+  );
 
-  return hasReadAccess
+  return !!hasReadAccess;
 }
 
 /**
@@ -60,10 +62,15 @@ export function checkModulePermission(
  */
 export function canApproveSubscription(
   session: Session | null,
-  module: ModulePermissionData
+  module: ModulePermissionData,
 ): boolean {
-  if (!session?.user) return false
-  return checkModulePermission(module, session.user.id!, session.user.isAdmin || false, 'write')
+  if (!session?.user) return false;
+  return checkModulePermission(
+    module,
+    session.user.id!,
+    session.user.isAdmin || false,
+    "write",
+  );
 }
 
 /**
@@ -71,10 +78,10 @@ export function canApproveSubscription(
  */
 export function isApplicationOwner(
   session: Session | null,
-  ownerId: string
+  ownerId: string,
 ): boolean {
-  if (!session?.user) return false
-  return session.user.id === ownerId
+  if (!session?.user) return false;
+  return session.user.id === ownerId;
 }
 
 /**
@@ -83,23 +90,25 @@ export function isApplicationOwner(
  */
 export function canManageModule(
   session: Session | null,
-  module: ModulePermissionData
+  module: ModulePermissionData,
 ): boolean {
-  if (!session?.user) return false
+  if (!session?.user) return false;
 
-  const userId = session.user.id!
-  const isAdmin = session.user.isAdmin || false
+  const userId = session.user.id!;
+  const isAdmin = session.user.isAdmin || false;
 
   // Platform admins can manage any module
-  if (isAdmin) return true
+  if (isAdmin) return true;
 
   // Module owner can manage
-  if (module.owner.userId === userId) return true
+  if (module.owner.userId === userId) return true;
 
   // Maintainers with admin role can manage
-  return module.maintainers?.some(
-    (m) => m.userId === userId && m.role === 'admin'
-  ) || false
+  return (
+    module.maintainers?.some(
+      (m) => m.userId === userId && m.role === "admin",
+    ) || false
+  );
 }
 
 /**
@@ -108,8 +117,8 @@ export function canManageModule(
  */
 export function canPublishVersion(
   session: Session | null,
-  module: ModulePermissionData
+  module: ModulePermissionData,
 ): boolean {
   // Same permissions as approving subscriptions
-  return canApproveSubscription(session, module)
+  return canApproveSubscription(session, module);
 }

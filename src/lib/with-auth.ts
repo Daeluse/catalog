@@ -4,55 +4,57 @@
  * Supports both NextAuth session and API token authentication
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '../../auth'
-import { Session } from 'next-auth'
-import { unauthorizedResponse } from './api-responses'
-import { validateApiToken } from './api-tokens'
-import { checkRateLimit, getRateLimitStatus } from './rate-limiter'
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "./auth";
+import { Session } from "next-auth";
+import { unauthorizedResponse } from "./api-responses";
+import { validateApiToken } from "./api-tokens";
+import { checkRateLimit, getRateLimitStatus } from "./rate-limiter";
 
 /**
  * User information extracted from session or API token
  */
 export interface AuthenticatedUser {
-  id: string
-  email: string
-  name: string
-  isAdmin?: boolean
-  tokenId?: string // Present if authenticated via API token
-  authMethod: 'session' | 'token' // Track which auth method was used
+  id: string;
+  email: string;
+  name: string;
+  isAdmin?: boolean;
+  tokenId?: string; // Present if authenticated via API token
+  authMethod: "session" | "token"; // Track which auth method was used
 }
 
 /**
  * Extract user from session with type safety
  */
-export function getUserFromSession(session: Session | null): AuthenticatedUser | null {
-  if (!session?.user) return null
+export function getUserFromSession(
+  session: Session | null,
+): AuthenticatedUser | null {
+  if (!session?.user) return null;
 
   return {
     id: session.user.id!,
     email: session.user.email!,
     name: session.user.name!,
     isAdmin: session.user.isAdmin,
-    authMethod: 'session',
-  }
+    authMethod: "session",
+  };
 }
 
 /**
  * Extract Bearer token from Authorization header
  */
 function extractBearerToken(request: NextRequest): string | null {
-  const authHeader = request.headers.get('authorization')
+  const authHeader = request.headers.get("authorization");
   if (!authHeader) {
-    return null
+    return null;
   }
 
-  const parts = authHeader.split(' ')
-  if (parts.length !== 2 || parts[0] !== 'Bearer') {
-    return null
+  const parts = authHeader.split(" ");
+  if (parts.length !== 2 || parts[0] !== "Bearer") {
+    return null;
   }
 
-  return parts[1]
+  return parts[1];
 }
 
 /**
@@ -62,65 +64,71 @@ function extractBearerToken(request: NextRequest): string | null {
  * @returns User object with session or rate limit info, or error response
  */
 interface RateLimitInfo {
-  limit: number
-  remaining: number
-  resetAt: Date
-  allowed: boolean
+  limit: number;
+  remaining: number;
+  resetAt: Date;
+  allowed: boolean;
 }
 
 export async function requireAuth(
-  request?: NextRequest
+  request?: NextRequest,
 ): Promise<
   | { user: AuthenticatedUser; session: Session; rateLimit?: RateLimitInfo }
   | { error: NextResponse }
 > {
+  // Clone request if provided
+  const clonedRequest =
+    request == null ? null : (request.clone() as NextRequest);
+
   // First, try session-based authentication
-  const session = await auth()
+  const session = await auth();
 
   if (session?.user) {
-    const user = getUserFromSession(session)
+    const user = getUserFromSession(session);
     if (user) {
-      return { user, session }
+      return { user, session };
     }
   }
 
   // If no session and request provided, try API token authentication
-  if (request) {
-    const token = extractBearerToken(request)
+  if (clonedRequest) {
+    const token = extractBearerToken(clonedRequest);
     if (token) {
       // Validate token
-      const apiUser = await validateApiToken(token)
+      const apiUser = await validateApiToken(token);
       if (!apiUser) {
         return {
-          error: unauthorizedResponse('Invalid or expired API token'),
-        }
+          error: unauthorizedResponse("Invalid or expired API token"),
+        };
       }
 
       // Check rate limit
-      const rateLimit = checkRateLimit(apiUser.tokenId)
+      const rateLimit = checkRateLimit(apiUser.tokenId);
       if (!rateLimit.allowed) {
-        const resetAtSeconds = Math.ceil(rateLimit.resetAt.getTime() / 1000)
+        const resetAtSeconds = Math.ceil(rateLimit.resetAt.getTime() / 1000);
         const response = NextResponse.json(
           {
-            error: 'Rate limit exceeded',
+            error: "Rate limit exceeded",
             message: `Too many requests. Rate limit: ${rateLimit.limit} requests per hour`,
             limit: rateLimit.limit,
             remaining: 0,
             resetAt: rateLimit.resetAt.toISOString(),
           },
-          { status: 429 }
-        )
+          { status: 429 },
+        );
 
         // Add rate limit headers
-        response.headers.set('X-RateLimit-Limit', rateLimit.limit.toString())
-        response.headers.set('X-RateLimit-Remaining', '0')
-        response.headers.set('X-RateLimit-Reset', resetAtSeconds.toString())
+        response.headers.set("X-RateLimit-Limit", rateLimit.limit.toString());
+        response.headers.set("X-RateLimit-Remaining", "0");
+        response.headers.set("X-RateLimit-Reset", resetAtSeconds.toString());
         response.headers.set(
-          'Retry-After',
-          Math.ceil((rateLimit.resetAt.getTime() - Date.now()) / 1000).toString()
-        )
+          "Retry-After",
+          Math.ceil(
+            (rateLimit.resetAt.getTime() - Date.now()) / 1000,
+          ).toString(),
+        );
 
-        return { error: response }
+        return { error: response };
       }
 
       // Convert API token user to AuthenticatedUser format
@@ -129,20 +137,20 @@ export async function requireAuth(
         email: apiUser.userEmail,
         name: apiUser.userName,
         tokenId: apiUser.tokenId,
-        authMethod: 'token',
-      }
+        authMethod: "token",
+      };
 
       // Return user with empty session and rate limit info
       return {
         user,
         session: {} as Session, // Empty session for token auth
         rateLimit: getRateLimitStatus(apiUser.tokenId),
-      }
+      };
     }
   }
 
   // No valid authentication found
-  return { error: unauthorizedResponse() }
+  return { error: unauthorizedResponse() };
 }
 
 /**
@@ -151,26 +159,27 @@ export async function requireAuth(
  * @returns Admin user object or error response
  */
 export async function requireAdmin(
-  request?: NextRequest
+  request?: NextRequest,
 ): Promise<
-  { user: AuthenticatedUser; session: Session; rateLimit?: RateLimitInfo } | { error: NextResponse }
+  | { user: AuthenticatedUser; session: Session; rateLimit?: RateLimitInfo }
+  | { error: NextResponse }
 > {
-  const authResult = await requireAuth(request)
+  const authResult = await requireAuth(request);
 
-  if ('error' in authResult) {
-    return authResult
+  if ("error" in authResult) {
+    return authResult;
   }
 
   if (!authResult.user.isAdmin) {
     return {
       error: NextResponse.json(
-        { success: false, error: 'Admin access required' },
-        { status: 403 }
+        { success: false, error: "Admin access required" },
+        { status: 403 },
       ),
-    }
+    };
   }
 
-  return authResult
+  return authResult;
 }
 
 /**
@@ -178,24 +187,22 @@ export async function requireAdmin(
  * @param request - NextRequest object (optional, needed for API token auth)
  * @returns User object or null (never returns error)
  */
-export async function optionalAuth(
-  request?: NextRequest
-): Promise<{
-  user: AuthenticatedUser | null
-  session: Session | null
-  rateLimit?: RateLimitInfo
+export async function optionalAuth(request?: NextRequest): Promise<{
+  user: AuthenticatedUser | null;
+  session: Session | null;
+  rateLimit?: RateLimitInfo;
 }> {
-  const authResult = await requireAuth(request)
+  const authResult = await requireAuth(request);
 
-  if ('error' in authResult) {
-    return { user: null, session: null }
+  if ("error" in authResult) {
+    return { user: null, session: null };
   }
 
   return {
     user: authResult.user,
     session: authResult.session,
     rateLimit: authResult.rateLimit,
-  }
+  };
 }
 
 /**
@@ -204,9 +211,9 @@ export async function optionalAuth(
 export function isAuthError(
   result:
     | { user: AuthenticatedUser; session: Session; rateLimit?: RateLimitInfo }
-    | { error: NextResponse }
+    | { error: NextResponse },
 ): result is { error: NextResponse } {
-  return 'error' in result
+  return "error" in result;
 }
 
 /**
@@ -214,18 +221,18 @@ export function isAuthError(
  */
 export function addRateLimitHeaders(
   response: NextResponse,
-  rateLimit?: RateLimitInfo
+  rateLimit?: RateLimitInfo,
 ): NextResponse {
   if (!rateLimit) {
-    return response
+    return response;
   }
 
-  const resetAtSeconds = Math.ceil(rateLimit.resetAt.getTime() / 1000)
-  response.headers.set('X-RateLimit-Limit', rateLimit.limit.toString())
-  response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString())
-  response.headers.set('X-RateLimit-Reset', resetAtSeconds.toString())
+  const resetAtSeconds = Math.ceil(rateLimit.resetAt.getTime() / 1000);
+  response.headers.set("X-RateLimit-Limit", rateLimit.limit.toString());
+  response.headers.set("X-RateLimit-Remaining", rateLimit.remaining.toString());
+  response.headers.set("X-RateLimit-Reset", resetAtSeconds.toString());
 
-  return response
+  return response;
 }
 
 /**
@@ -242,25 +249,33 @@ export function withAuth(
     request: NextRequest,
     user: AuthenticatedUser,
     session: Session,
-    context?: Record<string, unknown>
-  ) => Promise<NextResponse>
+    context?: Record<string, unknown>,
+  ) => Promise<NextResponse>,
 ) {
-  return async (request: NextRequest, context?: Record<string, unknown>): Promise<NextResponse> => {
-    const authResult = await requireAuth(request)
+  return async (
+    request: NextRequest,
+    context?: Record<string, unknown>,
+  ): Promise<NextResponse> => {
+    const authResult = await requireAuth(request);
 
     if (isAuthError(authResult)) {
-      return authResult.error
+      return authResult.error;
     }
 
-    const response = await handler(request, authResult.user, authResult.session, context)
+    const response = await handler(
+      request,
+      authResult.user,
+      authResult.session,
+      context,
+    );
 
     // Add rate limit headers if authenticated via API token
     if (authResult.rateLimit) {
-      return addRateLimitHeaders(response, authResult.rateLimit)
+      return addRateLimitHeaders(response, authResult.rateLimit);
     }
 
-    return response
-  }
+    return response;
+  };
 }
 
 /**
@@ -272,25 +287,33 @@ export function withAdmin(
     request: NextRequest,
     user: AuthenticatedUser,
     session: Session,
-    context?: Record<string, unknown>
-  ) => Promise<NextResponse>
+    context?: Record<string, unknown>,
+  ) => Promise<NextResponse>,
 ) {
-  return async (request: NextRequest, context?: Record<string, unknown>): Promise<NextResponse> => {
-    const authResult = await requireAdmin(request)
+  return async (
+    request: NextRequest,
+    context?: Record<string, unknown>,
+  ): Promise<NextResponse> => {
+    const authResult = await requireAdmin(request);
 
     if (isAuthError(authResult)) {
-      return authResult.error
+      return authResult.error;
     }
 
-    const response = await handler(request, authResult.user, authResult.session, context)
+    const response = await handler(
+      request,
+      authResult.user,
+      authResult.session,
+      context,
+    );
 
     // Add rate limit headers if authenticated via API token
     if (authResult.rateLimit) {
-      return addRateLimitHeaders(response, authResult.rateLimit)
+      return addRateLimitHeaders(response, authResult.rateLimit);
     }
 
-    return response
-  }
+    return response;
+  };
 }
 
 /**
@@ -302,18 +325,21 @@ export function withOptionalAuth(
     request: NextRequest,
     user: AuthenticatedUser | null,
     session: Session | null,
-    context?: Record<string, unknown>
-  ) => Promise<NextResponse>
+    context?: Record<string, unknown>,
+  ) => Promise<NextResponse>,
 ) {
-  return async (request: NextRequest, context?: Record<string, unknown>): Promise<NextResponse> => {
-    const { user, session, rateLimit } = await optionalAuth(request)
-    const response = await handler(request, user, session, context)
+  return async (
+    request: NextRequest,
+    context?: Record<string, unknown>,
+  ): Promise<NextResponse> => {
+    const { user, session, rateLimit } = await optionalAuth(request);
+    const response = await handler(request, user, session, context);
 
     // Add rate limit headers if authenticated via API token
     if (rateLimit) {
-      return addRateLimitHeaders(response, rateLimit)
+      return addRateLimitHeaders(response, rateLimit);
     }
 
-    return response
-  }
+    return response;
+  };
 }

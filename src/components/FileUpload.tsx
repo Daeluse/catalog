@@ -1,31 +1,22 @@
-'use client'
+"use client";
 
-import { useState, useCallback } from 'react'
-import { formatBytes } from '@/lib/utils'
-
-interface UploadedFile {
-  file: File
-  name: string
-  relativePath: string // Preserve folder structure
-  size: number
-  type: string
-  preview?: string
-}
+import { useState, useCallback } from "react";
+import { formatBytes } from "@/lib/utils";
 
 export interface FileWithPath {
-  file: File
-  relativePath: string
+  file: File;
+  relativePath: string;
 }
 
 interface FileUploadProps {
-  onFilesSelected: (files: FileWithPath[]) => void
-  accept?: string
-  maxFiles?: number
-  maxSize?: number // in MB
-  multiple?: boolean
-  label?: string
-  description?: string
-  allowDirectories?: boolean // Enable folder upload
+  onFilesSelected: (files: FileWithPath[]) => void;
+  accept?: string;
+  maxFiles?: number;
+  maxSize?: number; // in MB
+  multiple?: boolean;
+  label?: string;
+  description?: string;
+  allowDirectories?: boolean; // Enable folder upload
 }
 
 export function FileUpload({
@@ -38,239 +29,249 @@ export function FileUpload({
   description = "Drag and drop files here, or click to select files",
   allowDirectories = false,
 }: FileUploadProps) {
-  const [files, setFiles] = useState<UploadedFile[]>([])
-  const [isDragging, setIsDragging] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [files, setFiles] = useState<FileWithPath[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Extract relative path from File object
   const getRelativePath = useCallback((file: File): string => {
-    // @ts-expect-error - webkitRelativePath is non-standard but widely supported
-    const webkitPath = file.webkitRelativePath
+    const webkitPath = file.webkitRelativePath;
     if (webkitPath) {
       // Remove the top-level folder name (e.g., "dist/")
-      const parts = webkitPath.split('/')
-      return parts.length > 1 ? parts.slice(1).join('/') : file.name
+      const parts = webkitPath.split("/");
+      return parts.length > 1 ? parts.slice(1).join("/") : file.name;
     }
-    return file.name
-  }, [])
+    return file.name;
+  }, []);
 
   const validateFile = useCallback(
     (file: File): string | null => {
       // Check file size
-      const fileSizeMB = file.size / (1024 * 1024)
+      const fileSizeMB = file.size / (1024 * 1024);
       if (fileSizeMB > maxSize) {
-        return `${file.name} is too large. Maximum size is ${maxSize}MB.`
+        return `${file.name} is too large. Maximum size is ${maxSize}MB.`;
       }
 
       // Check file type if accept is specified
       if (accept) {
-        const acceptedExtensions = accept.split(",").map((ext) => ext.trim())
-        const fileExtension = "." + file.name.split(".").pop()?.toLowerCase()
+        const acceptedExtensions = accept.split(",").map((ext) => ext.trim());
+        const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
 
         if (!acceptedExtensions.includes(fileExtension)) {
-          return `${file.name} has an invalid file type. Accepted types: ${accept}`
+          return `${file.name} has an invalid file type. Accepted types: ${accept}`;
         }
       }
 
-      return null
+      return null;
     },
-    [accept, maxSize]
-  )
+    [accept, maxSize],
+  );
 
   const handleFiles = useCallback(
     (newFiles: FileList | File[]) => {
-      setError(null)
-      const fileArray = Array.from(newFiles)
+      setError(null);
+      const fileArray = Array.from(newFiles);
 
       // Check max files limit
       if (!multiple && fileArray.length > 1) {
-        setError("Only one file can be uploaded")
-        return
+        setError("Only one file can be uploaded");
+        return;
       }
 
       if (files.length + fileArray.length > maxFiles) {
-        setError(`Maximum ${maxFiles} files allowed`)
-        return
+        setError(`Maximum ${maxFiles} files allowed`);
+        return;
       }
 
       // Validate each file
-      const validatedFiles: UploadedFile[] = []
+      const validatedFiles: FileWithPath[] = [];
       for (const file of fileArray) {
-        const validationError = validateFile(file)
+        const validationError = validateFile(file);
         if (validationError) {
-          setError(validationError)
-          return
+          setError(validationError);
+          return;
         }
 
-        const relativePath = getRelativePath(file)
+        const relativePath = getRelativePath(file);
         validatedFiles.push({
           file,
-          name: file.name,
           relativePath,
-          size: file.size,
-          type: file.type,
-        })
+        });
       }
 
-      const updatedFiles = multiple ? [...files, ...validatedFiles] : validatedFiles
-      setFiles(updatedFiles)
-      onFilesSelected(updatedFiles.map((f) => ({ file: f.file, relativePath: f.relativePath })))
+      const updatedFiles = multiple
+        ? [...files, ...validatedFiles]
+        : validatedFiles;
+      setFiles(updatedFiles);
+      onFilesSelected(
+        updatedFiles.map((f) => ({
+          file: f.file,
+          relativePath: f.relativePath,
+        })),
+      );
     },
-    [files, maxFiles, multiple, onFilesSelected, validateFile, getRelativePath]
-  )
+    [files, maxFiles, multiple, onFilesSelected, validateFile, getRelativePath],
+  );
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragging(true)
-  }, [])
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragging(false)
-  }, [])
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }, [])
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
   // Handle folder drag and drop using File System Access API
   const handleDrop = useCallback(
     async (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setIsDragging(false)
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
 
-      const items = Array.from(e.dataTransfer.items)
+      const items = Array.from(e.dataTransfer.items);
 
       // Check if any items are directories
-      const hasDirectories = items.some(item => {
-        const entry = item.webkitGetAsEntry?.()
-        return entry?.isDirectory
-      })
+      const hasDirectories = items.some((item) => {
+        const entry = item.webkitGetAsEntry?.();
+        return entry?.isDirectory;
+      });
 
       if (hasDirectories && allowDirectories) {
         // Handle directory drops
-        const allFiles: File[] = []
+        const allFiles: File[] = [];
 
         for (const item of items) {
-          const entry = item.webkitGetAsEntry?.()
+          const entry = item.webkitGetAsEntry?.();
           if (entry) {
-            const files = await traverseFileTree(entry)
-            allFiles.push(...files)
+            const files = await traverseFileTree(entry);
+            allFiles.push(...files);
           }
         }
 
         if (allFiles.length > 0) {
-          handleFiles(allFiles)
+          handleFiles(allFiles);
         }
       } else {
         // Handle regular file drops
-        const droppedFiles = e.dataTransfer.files
+        const droppedFiles = e.dataTransfer.files;
         if (droppedFiles.length > 0) {
-          handleFiles(droppedFiles)
+          handleFiles(droppedFiles);
         }
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [handleFiles, allowDirectories]
-  )
+    [handleFiles, allowDirectories],
+  );
 
   // Recursively traverse directory tree and collect files
-  const traverseFileTree = async (item: FileSystemEntry, path = ''): Promise<File[]> => {
-    const files: File[] = []
+  const traverseFileTree = async (
+    item: FileSystemEntry,
+    path = "",
+  ): Promise<File[]> => {
+    const files: File[] = [];
 
     if (item.isFile) {
-      const fileEntry = item as FileSystemFileEntry
+      const fileEntry = item as FileSystemFileEntry;
       try {
         const file = await new Promise<File>((resolve, reject) => {
           fileEntry.file((file: File) => {
             // Create a new File object with the relative path
-            const newFile = new File([file], file.name, { type: file.type })
+            const newFile = new File([file], file.name, { type: file.type });
             // Attach the relative path as a custom property
-            Object.defineProperty(newFile, 'webkitRelativePath', {
+            Object.defineProperty(newFile, "webkitRelativePath", {
               value: path ? `${path}/${file.name}` : file.name,
-              writable: false
-            })
-            resolve(newFile)
-          }, reject)
-        })
-        files.push(file)
+              writable: false,
+            });
+            resolve(newFile);
+          }, reject);
+        });
+        files.push(file);
       } catch (error) {
-        console.error(`Error reading file ${path}:`, error)
+        console.error(`Error reading file ${path}:`, error);
       }
     } else if (item.isDirectory) {
-      const dirEntry = item as FileSystemDirectoryEntry
-      const dirReader = dirEntry.createReader()
+      const dirEntry = item as FileSystemDirectoryEntry;
+      const dirReader = dirEntry.createReader();
 
       // readEntries() must be called repeatedly until it returns an empty array
       // because it only returns up to 100 entries at a time
       const readAllEntries = async (): Promise<FileSystemEntry[]> => {
-        const allEntries: FileSystemEntry[] = []
+        const allEntries: FileSystemEntry[] = [];
 
         const readBatch = async (): Promise<void> => {
           const entries = await new Promise<FileSystemEntry[]>((resolve) => {
-            dirReader.readEntries((entries: FileSystemEntry[]) => resolve(entries))
-          })
+            dirReader.readEntries((entries: FileSystemEntry[]) =>
+              resolve(entries),
+            );
+          });
 
           if (entries.length > 0) {
-            allEntries.push(...entries)
-            await readBatch() // Read next batch
+            allEntries.push(...entries);
+            await readBatch(); // Read next batch
           }
-        }
+        };
 
-        await readBatch()
-        return allEntries
-      }
+        await readBatch();
+        return allEntries;
+      };
 
       try {
-        const entries = await readAllEntries()
+        const entries = await readAllEntries();
 
         for (const entry of entries) {
-          const nestedPath = path ? `${path}/${item.name}` : item.name
-          const nestedFiles = await traverseFileTree(entry, nestedPath)
-          files.push(...nestedFiles)
+          const nestedPath = path ? `${path}/${item.name}` : item.name;
+          const nestedFiles = await traverseFileTree(entry, nestedPath);
+          files.push(...nestedFiles);
         }
       } catch (error) {
-        console.error(`Error reading directory ${path}:`, error)
+        console.error(`Error reading directory ${path}:`, error);
       }
     }
 
-    return files
-  }
+    return files;
+  };
 
   const handleFileInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const selectedFiles = e.target.files
+      const selectedFiles = e.target.files;
       if (selectedFiles && selectedFiles.length > 0) {
-        handleFiles(selectedFiles)
+        handleFiles(selectedFiles);
       }
     },
-    [handleFiles]
-  )
+    [handleFiles],
+  );
 
   const removeFile = useCallback(
     (index: number) => {
-      const updatedFiles = files.filter((_, i) => i !== index)
-      setFiles(updatedFiles)
-      onFilesSelected(updatedFiles.map((f) => ({ file: f.file, relativePath: f.relativePath })))
+      const updatedFiles = files.filter((_, i) => i !== index);
+      setFiles(updatedFiles);
+      onFilesSelected(
+        updatedFiles.map((f) => ({
+          file: f.file,
+          relativePath: f.relativePath,
+        })),
+      );
     },
-    [files, onFilesSelected]
-  )
-
+    [files, onFilesSelected],
+  );
 
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label className="block text-sm font-medium text-zinc-700">
           {label}
         </label>
         {description && (
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            {description}
-          </p>
+          <p className="mt-1 text-xs text-zinc-500">{description}</p>
         )}
       </div>
 
@@ -282,8 +283,8 @@ export function FileUpload({
         onDrop={handleDrop}
         className={`relative rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
           isDragging
-            ? "border-zinc-900 bg-zinc-100 dark:border-zinc-50 dark:bg-zinc-800"
-            : "border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+            ? "border-zinc-900 bg-zinc-100 "
+            : "border-zinc-300 bg-white"
         }`}
       >
         <input
@@ -293,12 +294,11 @@ export function FileUpload({
           accept={accept}
           multiple={multiple}
           onChange={handleFileInput}
-          {...(allowDirectories ? { webkitdirectory: '', directory: '', mozdirectory: '' } : {})}
+          {...(allowDirectories
+            ? { webkitdirectory: "", directory: "", mozdirectory: "" }
+            : {})}
         />
-        <label
-          htmlFor="file-upload"
-          className="cursor-pointer"
-        >
+        <label htmlFor="file-upload" className="cursor-pointer">
           <div className="space-y-2">
             <svg
               className="mx-auto h-12 w-12 text-zinc-400"
@@ -313,13 +313,13 @@ export function FileUpload({
                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               />
             </svg>
-            <div className="text-sm text-zinc-600 dark:text-zinc-400">
-              <span className="font-medium text-zinc-900 hover:text-zinc-700 dark:text-white dark:hover:text-zinc-300">
+            <div className="text-sm text-zinc-600">
+              <span className="font-medium text-zinc-900 hover:text-zinc-700">
                 Click to upload
               </span>{" "}
               or drag and drop
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-500">
+            <p className="text-xs text-zinc-500">
               {accept} (max {maxSize}MB per file, {maxFiles} files max)
             </p>
           </div>
@@ -328,22 +328,22 @@ export function FileUpload({
 
       {/* Error Message */}
       {error && (
-        <div className="rounded-md bg-red-50 p-3 dark:bg-red-900/20">
-          <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+        <div className="rounded-md bg-red-50 p-3">
+          <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
 
       {/* File List */}
       {files.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <p className="text-sm font-medium text-zinc-700">
             Uploaded Files ({files.length})
           </p>
           <div className="space-y-2">
             {files.map((file, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between rounded-md bg-zinc-50 p-3 dark:bg-zinc-800"
+                className="flex items-center justify-between rounded-md bg-zinc-50 p-3"
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <svg
@@ -360,18 +360,18 @@ export function FileUpload({
                     />
                   </svg>
                   <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-medium text-zinc-900 dark:text-white">
+                    <p className="truncate text-sm font-medium text-zinc-900">
                       {file.relativePath}
                     </p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {formatBytes(file.size)}
+                    <p className="text-xs text-zinc-500">
+                      {formatBytes(file.file.size)}
                     </p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => removeFile(index)}
-                  className="ml-4 flex-shrink-0 text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
+                  className="ml-4 flex-shrink-0 text-zinc-400 hover:text-red-600 "
                 >
                   <svg
                     className="h-5 w-5"
@@ -393,5 +393,5 @@ export function FileUpload({
         </div>
       )}
     </div>
-  )
+  );
 }

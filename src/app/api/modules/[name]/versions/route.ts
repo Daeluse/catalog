@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server'
-import { requireAuth, isAuthError } from '@/lib/with-auth'
-import { db } from '@/lib/db-adapter'
-import semver from 'semver'
+import { NextRequest } from "next/server";
+import { requireAuth, isAuthError } from "@/lib/with-auth";
+import { db } from "@/lib/db-adapter";
+import semver from "semver";
 import {
   successResponse,
   createdResponse,
@@ -10,45 +10,45 @@ import {
   conflictResponse,
   validationErrorResponse,
   serverErrorResponse,
-} from '@/lib/api-responses'
-import { checkModulePermission } from '@/lib/permissions'
-import { validators, validationMessages } from '@/lib/validators'
+} from "@/lib/api-responses";
+import { checkModulePermission } from "@/lib/permissions";
+import { validators, validationMessages } from "@/lib/validators";
 
 // GET /api/modules/[name]/versions - List all versions (public)
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ name: string }> }
+  { params }: { params: Promise<{ name: string }> },
 ) {
   try {
-    const { name } = await params
+    const { name } = await params;
 
-    const versions = await db.versions.find({ moduleName: name })
+    const versions = await db.versions.find({ moduleName: name });
 
     // Sort by semver
-    versions.sort((a, b) => semver.rcompare(a.version, b.version))
+    versions.sort((a, b) => semver.rcompare(a.version, b.version));
 
-    return successResponse({ versions })
+    return successResponse({ versions });
   } catch (error) {
-    console.error('Error fetching versions:', error)
-    return serverErrorResponse('Failed to fetch versions')
+    console.error("Error fetching versions:", error);
+    return serverErrorResponse("Failed to fetch versions");
   }
 }
 
 // POST /api/modules/[name]/versions - Publish new version (authenticated)
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ name: string }> }
+  { params }: { params: Promise<{ name: string }> },
 ) {
-  const authResult = await requireAuth(request)
+  const authResult = await requireAuth(request);
   if (isAuthError(authResult)) {
-    return authResult.error
+    return authResult.error;
   }
 
-  const { user } = authResult
+  const { user } = authResult;
 
   try {
-    const { name } = await params
-    const body = await request.json()
+    const { name } = await params;
+    const body = await request.json();
     const {
       version,
       federation,
@@ -59,48 +59,56 @@ export async function POST(
       changelog,
       dependencies,
       peerDependencies,
-    } = body
+    } = body;
 
     // Validate required fields
-    const errors: Record<string, string> = {}
+    const errors: Record<string, string> = {};
 
-    if (!validators.notEmpty(version || '')) {
-      errors.version = validationMessages.notEmpty
+    if (!validators.notEmpty(version || "")) {
+      errors.version = validationMessages.notEmpty;
     } else if (!validators.semver(version)) {
-      errors.version = validationMessages.semver
+      errors.version = validationMessages.semver;
     }
 
-    if (!federation) errors.federation = validationMessages.notEmpty
-    if (!assets) errors.assets = validationMessages.notEmpty
-    if (!validators.notEmpty(buildTool || '')) errors.buildTool = validationMessages.notEmpty
-    if (!validators.notEmpty(buildToolVersion || ''))
-      errors.buildToolVersion = validationMessages.notEmpty
+    if (!federation) errors.federation = validationMessages.notEmpty;
+    if (!assets) errors.assets = validationMessages.notEmpty;
+    if (!validators.notEmpty(buildTool || ""))
+      errors.buildTool = validationMessages.notEmpty;
+    if (!validators.notEmpty(buildToolVersion || ""))
+      errors.buildToolVersion = validationMessages.notEmpty;
 
     if (Object.keys(errors).length > 0) {
-      return validationErrorResponse(errors)
+      return validationErrorResponse(errors);
     }
 
     // Find module and check permissions
-    const moduleDoc = await db.modules.findOne({ name })
+    const moduleDoc = await db.modules.findOne({ name });
     if (!moduleDoc) {
-      return notFoundResponse('Module')
+      return notFoundResponse("Module");
     }
 
-    const isAdmin = user.isAdmin || false
-    const hasPermission = checkModulePermission(moduleDoc, user.id, isAdmin, 'write')
+    const isAdmin = user.isAdmin || false;
+    const hasPermission = checkModulePermission(
+      moduleDoc,
+      user.id,
+      isAdmin,
+      "write",
+    );
 
     if (!hasPermission) {
-      return forbiddenResponse('Insufficient permissions to publish versions for this module')
+      return forbiddenResponse(
+        "Insufficient permissions to publish versions for this module",
+      );
     }
 
     // Check if version already exists
     const existingVersion = await db.versions.findOne({
       moduleName: name,
       version,
-    })
+    });
 
     if (existingVersion) {
-      return conflictResponse('Version already exists')
+      return conflictResponse("Version already exists");
     }
 
     // Create new version
@@ -125,12 +133,15 @@ export async function POST(
       downloadCount: 0,
       isPrerelease: semver.prerelease(version) !== null,
       isDeprecated: false,
-    }
+    };
 
-    const result = await db.versions.insertOne(newVersion)
+    const result = await db.versions.insertOne(newVersion);
 
     // Update module's latest version if this is newer
-    if (!moduleDoc.latestVersion || semver.gt(version, moduleDoc.latestVersion)) {
+    if (
+      !moduleDoc.latestVersion ||
+      semver.gt(version, moduleDoc.latestVersion)
+    ) {
       await db.modules.updateOne(
         { name },
         {
@@ -138,16 +149,16 @@ export async function POST(
             latestVersion: version,
             latestVersionId: result.insertedId,
           },
-        }
-      )
+        },
+      );
     }
 
     return createdResponse({
       ...newVersion,
       _id: result.insertedId,
-    })
+    });
   } catch (error) {
-    console.error('Error publishing version:', error)
-    return serverErrorResponse('Failed to publish version')
+    console.error("Error publishing version:", error);
+    return serverErrorResponse("Failed to publish version");
   }
 }

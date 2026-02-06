@@ -7,20 +7,20 @@
  * Pagination parameters
  */
 export interface PaginationParams {
-  limit: number
-  skip: number
+  limit: number;
+  skip: number;
 }
 
 /**
  * Pagination result metadata
  */
 export interface PaginationMeta {
-  total: number
-  limit: number
-  skip: number
-  hasMore: boolean
-  page: number
-  totalPages: number
+  total: number;
+  limit: number;
+  skip: number;
+  hasMore: boolean;
+  page: number;
+  totalPages: number;
 }
 
 /**
@@ -31,15 +31,17 @@ export interface PaginationMeta {
  */
 export function getPaginationParams(
   searchParams: URLSearchParams,
-  defaults: { limit?: number; skip?: number } = {}
+  defaults: { limit?: number; skip?: number } = {},
 ): PaginationParams {
-  const limit = parseInt(searchParams.get('limit') || String(defaults.limit || 20))
-  const skip = parseInt(searchParams.get('skip') || String(defaults.skip || 0))
+  const limit = parseInt(
+    searchParams.get("limit") || String(defaults.limit || 20),
+  );
+  const skip = parseInt(searchParams.get("skip") || String(defaults.skip || 0));
 
   return {
     limit: Math.min(Math.max(limit, 1), 100), // Clamp between 1 and 100
     skip: Math.max(skip, 0), // Ensure non-negative
-  }
+  };
 }
 
 /**
@@ -52,11 +54,11 @@ export function getPaginationParams(
 export function createPaginationMeta(
   total: number,
   limit: number,
-  skip: number
+  skip: number,
 ): PaginationMeta {
-  const page = Math.floor(skip / limit) + 1
-  const totalPages = Math.ceil(total / limit)
-  const hasMore = skip + limit < total
+  const page = Math.floor(skip / limit) + 1;
+  const totalPages = Math.ceil(total / limit);
+  const hasMore = skip + limit < total;
 
   return {
     total,
@@ -65,15 +67,15 @@ export function createPaginationMeta(
     hasMore,
     page,
     totalPages,
-  }
+  };
 }
 
 /**
  * Paginated response structure
  */
 export interface PaginatedResponse<T> {
-  data: T[]
-  pagination: PaginationMeta
+  data: T[];
+  pagination: PaginationMeta;
 }
 
 /**
@@ -86,12 +88,12 @@ export interface PaginatedResponse<T> {
 export function createPaginatedResponse<T>(
   data: T[],
   total: number,
-  params: PaginationParams
+  params: PaginationParams,
 ): PaginatedResponse<T> {
   return {
     data,
     pagination: createPaginationMeta(total, params.limit, params.skip),
-  }
+  };
 }
 
 /**
@@ -102,7 +104,7 @@ export const SORT_OPTIONS = {
   CREATED_DESC: { createdAt: -1 as const },
   NAME_ASC: { name: 1 as const },
   NAME_DESC: { name: -1 as const },
-} as const
+} as const;
 
 /**
  * Get sort option from request parameters
@@ -112,20 +114,20 @@ export const SORT_OPTIONS = {
  */
 export function getSortOption(
   searchParams: URLSearchParams,
-  defaultSort: Record<string, 1 | -1> = SORT_OPTIONS.UPDATED_DESC
+  defaultSort: Record<string, 1 | -1> = SORT_OPTIONS.UPDATED_DESC,
 ): Record<string, 1 | -1> {
-  const sort = searchParams.get('sort')
+  const sort = searchParams.get("sort");
 
   switch (sort) {
-    case 'updated':
-      return SORT_OPTIONS.UPDATED_DESC
-    case 'created':
-      return SORT_OPTIONS.CREATED_DESC
-    case 'name':
-      return SORT_OPTIONS.NAME_ASC
-    case 'name-desc':
-      return SORT_OPTIONS.NAME_DESC
+    case "updated":
+      return SORT_OPTIONS.UPDATED_DESC;
+    case "created":
+      return SORT_OPTIONS.CREATED_DESC;
+    case "name":
+      return SORT_OPTIONS.NAME_ASC;
+    case "name-desc":
+      return SORT_OPTIONS.NAME_DESC;
     default:
-      return defaultSort
+      return defaultSort;
   }
 }

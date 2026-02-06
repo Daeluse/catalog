@@ -1,15 +1,15 @@
-import { SelectHTMLAttributes, forwardRef } from 'react'
-import { cn } from '@/lib/utils'
+import { SelectHTMLAttributes, forwardRef } from "react";
+import { cn } from "@/lib/utils";
 
 export interface SelectOption {
-  readonly value: string
-  readonly label: string
+  readonly value: string;
+  readonly label: string;
 }
 
 export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
-  options: readonly SelectOption[]
-  placeholder?: string
-  error?: boolean
+  options: readonly SelectOption[];
+  placeholder?: string;
+  error?: boolean;
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
@@ -18,9 +18,9 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       <select
         ref={ref}
         className={cn(
-          'mt-2 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:focus:border-zinc-500',
-          error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
-          className
+          "mt-2 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:cursor-not-allowed disabled:opacity-50 ",
+          error && "border-red-500 focus:border-red-500 focus:ring-red-500",
+          className,
         )}
         {...props}
       >
@@ -35,10 +35,10 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           </option>
         ))}
       </select>
-    )
-  }
-)
+    );
+  },
+);
 
-Select.displayName = 'Select'
+Select.displayName = "Select";
 
-export { Select }
+export { Select };

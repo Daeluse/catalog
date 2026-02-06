@@ -1,20 +1,22 @@
-import { Session } from 'next-auth'
+import { Session } from "next-auth";
 
 /**
  * Create a mock NextAuth session
  */
-export function createMockSession(options: {
-  id?: string
-  email?: string
-  name?: string
-  isAdmin?: boolean
-} = {}): Session {
+export function createMockSession(
+  options: {
+    id?: string;
+    email?: string;
+    name?: string;
+    isAdmin?: boolean;
+  } = {},
+): Session {
   const {
-    id = 'test-user-id',
-    email = 'test@example.com',
-    name = 'Test User',
+    id = "test-user-id",
+    email = "test@example.com",
+    name = "Test User",
     isAdmin = false,
-  } = options
+  } = options;
 
   return {
     user: {
@@ -24,7 +26,7 @@ export function createMockSession(options: {
       isAdmin,
     },
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
-  }
+  };
 }
 
 /**
@@ -32,9 +34,9 @@ export function createMockSession(options: {
  */
 export function createMockAdminSession(): Session {
   return createMockSession({
-    id: 'admin-user-id',
-    email: 'admin@example.com',
-    name: 'Admin User',
+    id: "admin-user-id",
+    email: "admin@example.com",
+    name: "Admin User",
     isAdmin: true,
-  })
+  });
 }

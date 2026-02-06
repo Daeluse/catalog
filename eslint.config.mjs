@@ -1,10 +1,11 @@
-import { defineConfig } from "eslint/config";
+import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  globalIgnores(["storage/**/*"]),
   {
     ignores: [
       ".next/**",
@@ -13,6 +14,7 @@ const eslintConfig = defineConfig([
       "dist/**",
       "node_modules/**",
       "coverage/**",
+      "coverage/**/*",
       "mock-data/**",
       "storage/**",
       "test-storage/**",
@@ -22,6 +24,9 @@ const eslintConfig = defineConfig([
       "*.config.mjs",
       ".next/**/*",
     ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
   },
 ]);
 

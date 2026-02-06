@@ -1,18 +1,15 @@
-import mongoose, { Schema, Document } from 'mongoose'
+import mongoose, { Schema, Document } from 'mongoose';
+import { Owner } from "@/types/api";
 
 export interface IApplication extends Document {
-  name: string
-  description: string
-  contactEmail: string
-  owner: {
-    userId: string
-    email: string
-    name: string
-  }
-  origins: string[]
-  status: 'active' | 'suspended'
-  createdAt: Date
-  updatedAt: Date
+  name: string;
+  description: string;
+  contactEmail: string;
+  owner: Owner;
+  origins: string[];
+  status: 'active' | 'suspended';
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const ApplicationSchema = new Schema<IApplication>(
@@ -42,7 +39,7 @@ const ApplicationSchema = new Schema<IApplication>(
       required: true,
       validate: {
         validator: function (origins: string[]) {
-          return origins.length > 0
+          return origins.length > 0;
         },
         message: 'At least one origin is required',
       },
@@ -56,12 +53,12 @@ const ApplicationSchema = new Schema<IApplication>(
   {
     timestamps: true,
   }
-)
+);
 
 // Index for querying by owner
-ApplicationSchema.index({ 'owner.userId': 1 })
-ApplicationSchema.index({ status: 1 })
+ApplicationSchema.index({ 'owner.userId': 1 });
+ApplicationSchema.index({ status: 1 });
 
 export const Application =
   mongoose.models.Application ||
-  mongoose.model<IApplication>('Application', ApplicationSchema)
+  mongoose.model<IApplication>('Application', ApplicationSchema);

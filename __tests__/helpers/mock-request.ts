@@ -1,42 +1,44 @@
-import { NextRequest } from 'next/server'
+import { NextRequest } from "next/server";
 
 /**
  * Create a mock NextRequest for testing API routes
  */
-export function createMockRequest(options: {
-  method?: string
-  url?: string
-  headers?: Record<string, string>
-  body?: unknown
-  searchParams?: Record<string, string>
-} = {}): NextRequest {
+export function createMockRequest(
+  options: {
+    method?: string;
+    url?: string;
+    headers?: Record<string, string>;
+    body?: unknown;
+    searchParams?: Record<string, string>;
+  } = {},
+): NextRequest {
   const {
-    method = 'GET',
-    url = 'http://localhost:3000',
+    method = "GET",
+    url = "http://localhost:3000",
     headers = {},
     body,
     searchParams = {},
-  } = options
+  } = options;
 
   // Build URL with search params
-  const urlObj = new URL(url)
+  const urlObj = new URL(url);
   Object.entries(searchParams).forEach(([key, value]) => {
-    urlObj.searchParams.set(key, value)
-  })
+    urlObj.searchParams.set(key, value);
+  });
 
   const requestInit: RequestInit = {
     method,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...headers,
     },
-  }
+  };
 
   if (body) {
-    requestInit.body = JSON.stringify(body)
+    requestInit.body = JSON.stringify(body);
   }
 
-  return new NextRequest(urlObj.toString(), requestInit as unknown as RequestInit)
+  return new NextRequest(urlObj.toString(), requestInit as any);
 }
 
 /**
@@ -45,11 +47,11 @@ export function createMockRequest(options: {
 export function createMockRequestWithToken(
   token: string,
   options: {
-    method?: string
-    url?: string
-    headers?: Record<string, string>
-    body?: unknown
-  } = {}
+    method?: string;
+    url?: string;
+    headers?: Record<string, string>;
+    body?: unknown;
+  } = {},
 ): NextRequest {
   return createMockRequest({
     ...options,
@@ -57,36 +59,38 @@ export function createMockRequestWithToken(
       ...options.headers,
       Authorization: `Bearer ${token}`,
     },
-  })
+  });
 }
 
 /**
  * Create a mock multipart/form-data request
  */
-export function createMockMultipartRequest(options: {
-  method?: string
-  url?: string
-  headers?: Record<string, string>
-  formData?: FormData
-} = {}): NextRequest {
+export function createMockMultipartRequest(
+  options: {
+    method?: string;
+    url?: string;
+    headers?: Record<string, string>;
+    formData?: FormData;
+  } = {},
+): NextRequest {
   const {
-    method = 'POST',
-    url = 'http://localhost:3000',
+    method = "POST",
+    url = "http://localhost:3000",
     headers = {},
     formData,
-  } = options
+  } = options;
 
   const requestInit: RequestInit = {
     method,
     headers: {
-      'Content-Type': 'multipart/form-data',
+      "Content-Type": "multipart/form-data",
       ...headers,
     },
-  }
+  };
 
   if (formData) {
-    requestInit.body = formData as unknown as BodyInit
+    requestInit.body = formData as unknown as BodyInit;
   }
 
-  return new NextRequest(url, requestInit as unknown as RequestInit)
+  return new NextRequest(url, requestInit as any);
 }

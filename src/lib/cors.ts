@@ -1,8 +1,10 @@
-import { NextResponse } from 'next/server'
-import { connectDB } from '@/lib/db'
-import { Application, Subscription } from '@/models'
-import { getMockDatabase } from '@/lib/db-mock'
-import { env } from './env'
+import { NextResponse } from "next/server";
+
+import { connectDB } from "@/lib/db";
+import { getMockDatabase } from "@/lib/db-mock";
+import { env } from "./env";
+
+import { Application, Subscription } from "@/models";
 
 /**
  * Check if an origin is approved to access a module's assets
@@ -10,76 +12,80 @@ import { env } from './env'
  */
 export async function checkOriginApproval(
   origin: string | null,
-  moduleName: string
+  moduleName: string,
 ): Promise<string | null> {
-  if (!origin) return null
+  if (!origin) return null;
+
+  if (!env.enforceCors) {
+    return origin;
+  }
 
   try {
     if (env.useMocks) {
-      const db = getMockDatabase()
-      const subscriptionsCollection = db.collection('subscriptions')
-      const applicationsCollection = db.collection('applications')
+      const db = getMockDatabase();
+      const subscriptionsCollection = db.collection("subscriptions");
+      const applicationsCollection = db.collection("applications");
 
       // Find approved subscriptions for this module
       const subscriptions = await subscriptionsCollection.find({
         moduleName,
-        status: 'approved',
-      })
+        status: "approved",
+      });
 
       if (!subscriptions || subscriptions.length === 0) {
-        return null
+        return null;
       }
 
       // Check each subscription's application origins
       for (const subscription of subscriptions) {
         const application = await applicationsCollection.findOne({
           _id: subscription.applicationId,
-          status: 'active',
-        })
+          status: "active",
+        });
 
         if (application && Array.isArray(application.origins)) {
           // Check if origin matches any of the application's origins
           if (application.origins.includes(origin)) {
-            return origin
+            return origin;
           }
         }
       }
 
-      return null
+      return null;
     }
 
     // Production mode with MongoDB
-    await connectDB()
+    await connectDB();
 
     // Find approved subscriptions for this module
     const subscriptions = await Subscription.find({
       moduleName,
-      status: 'approved',
-    }).lean()
+      status: "approved",
+    }).lean();
 
     if (!subscriptions || subscriptions.length === 0) {
-      return null
+      return null;
     }
 
     // Get application IDs
-    const applicationIds = subscriptions.map((s) => s.applicationId)
+    const applicationIds = subscriptions.map((s) => s.applicationId);
 
     // Find active applications with matching origins
     const applications = await Application.find({
       _id: { $in: applicationIds },
-      status: 'active',
+      status: "active",
       origins: origin,
-    }).lean()
+    }).lean();
 
     // If we found any matching applications, return the origin
     if (applications.length > 0) {
-      return origin
+      return origin;
     }
 
-    return null
+    return null;
   } catch (error) {
-    console.error('Error checking origin approval:', error)
-    return null
+    console.error("Error checking origin approval:", error);
+    return null;
   }
 }
 
@@ -88,13 +94,13 @@ export async function checkOriginApproval(
  */
 export function setCorsHeaders(
   response: NextResponse,
-  origin: string
+  origin: string,
 ): NextResponse {
-  response.headers.set('Access-Control-Allow-Origin', origin)
-  response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS')
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type')
-  response.headers.set('Access-Control-Max-Age', '86400') // 24 hours
-  return response
+  response.headers.set("Access-Control-Allow-Origin", origin);
+  response.headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  response.headers.set("Access-Control-Max-Age", "86400"); // 24 hours
+  return response;
 }
 
 /**
@@ -105,19 +111,19 @@ export async function createCorsResponse(
   origin: string | null,
   moduleName: string,
   data?: unknown,
-  status: number = 200
+  status: number = 200,
 ): Promise<NextResponse | null> {
-  const approvedOrigin = await checkOriginApproval(origin, moduleName)
+  const approvedOrigin = await checkOriginApproval(origin, moduleName);
 
   if (!approvedOrigin) {
-    return null
+    return null;
   }
 
   const response = data
     ? NextResponse.json(data, { status })
-    : new NextResponse(null, { status })
+    : new NextResponse(null, { status });
 
-  return setCorsHeaders(response, approvedOrigin)
+  return setCorsHeaders(response, approvedOrigin);
 }
 
 /**
@@ -125,18 +131,18 @@ export async function createCorsResponse(
  */
 export function isValidOrigin(origin: string): boolean {
   try {
-    const url = new URL(origin)
+    const url = new URL(origin);
     // Must be http or https
-    if (!['http:', 'https:'].includes(url.protocol)) {
-      return false
+    if (!["http:", "https:"].includes(url.protocol)) {
+      return false;
     }
     // Must have a hostname
     if (!url.hostname) {
-      return false
+      return false;
     }
-    return true
+    return true;
   } catch {
-    return false
+    return false;
   }
 }
 
@@ -145,34 +151,34 @@ export function isValidOrigin(origin: string): boolean {
  * Returns an object with valid origins and error messages for invalid ones
  */
 export function validateOrigins(origins: string[]): {
-  valid: string[]
-  invalid: { origin: string; reason: string }[]
+  valid: string[];
+  invalid: { origin: string; reason: string }[];
 } {
-  const valid: string[] = []
-  const invalid: { origin: string; reason: string }[] = []
+  const valid: string[] = [];
+  const invalid: { origin: string; reason: string }[] = [];
 
   for (const origin of origins) {
-    if (!origin || typeof origin !== 'string') {
-      invalid.push({ origin: String(origin), reason: 'Invalid origin format' })
-      continue
+    if (!origin || typeof origin !== "string") {
+      invalid.push({ origin: String(origin), reason: "Invalid origin format" });
+      continue;
     }
 
-    const trimmed = origin.trim()
+    const trimmed = origin.trim();
     if (!trimmed) {
-      invalid.push({ origin, reason: 'Origin cannot be empty' })
-      continue
+      invalid.push({ origin, reason: "Origin cannot be empty" });
+      continue;
     }
 
     if (!isValidOrigin(trimmed)) {
       invalid.push({
         origin: trimmed,
-        reason: 'Must be a valid http:// or https:// URL',
-      })
-      continue
+        reason: "Must be a valid http:// or https:// URL",
+      });
+      continue;
     }
 
-    valid.push(trimmed)
+    valid.push(trimmed);
   }
 
-  return { valid, invalid }
+  return { valid, invalid };
 }

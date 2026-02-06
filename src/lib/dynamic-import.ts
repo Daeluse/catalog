@@ -1,0 +1,1 @@
+export const dynamicImpoty = async (path: string) => import(path);

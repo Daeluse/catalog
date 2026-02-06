@@ -1,42 +1,39 @@
-import { Check, Clock, X, Ban } from 'lucide-react'
+import { Check, Clock, X, Ban } from "lucide-react";
 
 interface SubscriptionStatusBadgeProps {
-  status: 'pending' | 'approved' | 'rejected' | 'revoked'
-  className?: string
+  status: "pending" | "approved" | "rejected" | "revoked";
+  className?: string;
 }
 
 const statusConfig = {
   pending: {
-    label: 'Pending',
+    label: "Pending",
     icon: Clock,
-    className:
-      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    className: "bg-yellow-100 text-yellow-800",
   },
   approved: {
-    label: 'Approved',
+    label: "Approved",
     icon: Check,
-    className:
-      'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    className: "bg-green-100 text-green-800",
   },
   rejected: {
-    label: 'Rejected',
+    label: "Rejected",
     icon: X,
-    className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    className: "bg-red-100 text-red-800",
   },
   revoked: {
-    label: 'Revoked',
+    label: "Revoked",
     icon: Ban,
-    className:
-      'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400',
+    className: "bg-zinc-100 text-zinc-800",
   },
-}
+};
 
 export function SubscriptionStatusBadge({
   status,
-  className = '',
+  className = "",
 }: SubscriptionStatusBadgeProps) {
-  const config = statusConfig[status]
-  const Icon = config.icon
+  const config = statusConfig[status];
+  const Icon = config.icon;
 
   return (
     <span
@@ -45,5 +42,5 @@ export function SubscriptionStatusBadge({
       <Icon className="h-3 w-3" />
       {config.label}
     </span>
-  )
+  );
 }

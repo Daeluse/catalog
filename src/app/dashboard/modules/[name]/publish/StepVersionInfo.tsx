@@ -1,28 +1,36 @@
-import { Card } from '@/components/Card'
-import { Button } from '@/components/Button'
-import { FormField, Input, TextArea, Select } from '@/components/form'
-import { BUILD_TOOLS } from '@/lib/constants'
+import { Card } from "@/components/Card";
+import { Button } from "@/components/Button";
+import { FormField, Input, TextArea, Select } from "@/components/form";
+import { BUILD_TOOLS } from "@/lib/constants";
 
 interface VersionData {
-  version: string
-  buildTool: string
-  buildToolVersion: string
-  changelog: string
+  version: string;
+  buildTool: string;
+  buildToolVersion: string;
+  changelog: string;
 }
 
 interface StepVersionInfoProps {
-  versionData: VersionData
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void
-  onNext: () => void
+  versionData: VersionData;
+  onChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => void;
+  onNext: () => void;
 }
 
-export default function StepVersionInfo({ versionData, onChange, onNext }: StepVersionInfoProps) {
-  const isValid = versionData.version && versionData.buildToolVersion
+export default function StepVersionInfo({
+  versionData,
+  onChange,
+  onNext,
+}: StepVersionInfoProps) {
+  const isValid = versionData.version && versionData.buildToolVersion;
 
   return (
     <div className="space-y-6">
       <Card className="p-6">
-        <h2 className="mb-6 text-xl font-semibold text-zinc-900 dark:text-white">
+        <h2 className="mb-6 text-xl font-semibold text-zinc-900">
           Version Information
         </h2>
 
@@ -53,7 +61,11 @@ export default function StepVersionInfo({ versionData, onChange, onNext }: StepV
             />
           </FormField>
 
-          <FormField label="Build Tool Version" required htmlFor="buildToolVersion">
+          <FormField
+            label="Build Tool Version"
+            required
+            htmlFor="buildToolVersion"
+          >
             <Input
               id="buildToolVersion"
               name="buildToolVersion"
@@ -83,5 +95,5 @@ export default function StepVersionInfo({ versionData, onChange, onNext }: StepV
         </Button>
       </div>
     </div>
-  )
+  );
 }

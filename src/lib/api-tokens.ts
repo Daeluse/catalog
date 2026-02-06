@@ -1,34 +1,38 @@
-import { connectDB } from './db'
-import { ApiToken } from '@/models'
-import { getMockDatabase } from './db-mock'
-import { ApiTokenDocument } from '@/types/database'
-import { env } from './env'
-import crypto from 'crypto'
-import bcrypt from 'bcryptjs'
+import crypto from "crypto";
+import bcrypt from "bcryptjs";
+
+import { ApiToken, IApiToken } from "@/models";
+
+import { connectDB } from "./db";
+import { getMockDatabase } from "./db-mock";
+import { env } from "./env";
 
 /**
  * Generate a cryptographically secure API token
  * Format: mfc_<40 random alphanumeric characters>
  */
 export function generateTokenString(): string {
-  const randomBytes = crypto.randomBytes(30)
-  const tokenValue = randomBytes.toString('base64url').slice(0, 40)
-  return `mfc_${tokenValue}`
+  const randomBytes = crypto.randomBytes(30);
+  const tokenValue = randomBytes.toString("base64url").slice(0, 40);
+  return `mfc_${tokenValue}`;
 }
 
 /**
  * Hash a token for secure storage
  */
 export async function hashToken(token: string): Promise<string> {
-  const salt = await bcrypt.genSalt(10)
-  return bcrypt.hash(token, salt)
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(token, salt);
 }
 
 /**
  * Verify a token against a hash
  */
-export async function verifyToken(token: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(token, hash)
+export async function verifyToken(
+  token: string,
+  hash: string,
+): Promise<boolean> {
+  return bcrypt.compare(token, hash);
 }
 
 /**
@@ -39,13 +43,13 @@ export async function createApiToken(
   userEmail: string,
   userName: string,
   name: string,
-  expiresInDays: number
-): Promise<{ token: string; tokenRecord: ApiTokenDocument }> {
-  const tokenString = generateTokenString()
-  const tokenHash = await hashToken(tokenString)
+  expiresInDays: number,
+): Promise<{ token: string; tokenRecord: IApiToken | null }> {
+  const tokenString = generateTokenString();
+  const tokenHash = await hashToken(tokenString);
 
-  const expiresAt = new Date()
-  expiresAt.setDate(expiresAt.getDate() + expiresInDays)
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
   const tokenData = {
     name,
@@ -54,20 +58,22 @@ export async function createApiToken(
     userEmail,
     userName,
     expiresAt,
-    status: 'active' as const,
-  }
+    status: "active" as const,
+  };
 
   if (env.useMocks) {
-    const db = getMockDatabase()
-    const tokensCollection = db.collection('apitokens')
-    const result = await tokensCollection.insertOne(tokenData)
-    const tokenRecord = await tokensCollection.findOne({ _id: result.insertedId })
-    return { token: tokenString, tokenRecord }
+    const db = getMockDatabase();
+    const tokensCollection = db.collection<IApiToken>("apitokens");
+    const result = await tokensCollection.insertOne(tokenData);
+    const tokenRecord = await tokensCollection.findOne({
+      _id: result.insertedId,
+    });
+    return { token: tokenString, tokenRecord };
   }
 
-  await connectDB()
-  const tokenRecord = await ApiToken.create(tokenData)
-  return { token: tokenString, tokenRecord: tokenRecord.toObject() }
+  await connectDB();
+  const tokenRecord = await ApiToken.create(tokenData);
+  return { token: tokenString, tokenRecord: tokenRecord.toObject() };
 }
 
 /**
@@ -75,82 +81,82 @@ export async function createApiToken(
  * Returns null if token is invalid, expired, or revoked
  */
 export async function validateApiToken(token: string): Promise<{
-  userId: string
-  userEmail: string
-  userName: string
-  tokenId: string
+  userId: string;
+  userEmail: string;
+  userName: string;
+  tokenId: string;
 } | null> {
-  if (!token || !token.startsWith('mfc_')) {
-    return null
+  if (!token || !token.startsWith("mfc_")) {
+    return null;
   }
 
   try {
     if (env.useMocks) {
-      const db = getMockDatabase()
-      const tokensCollection = db.collection<ApiTokenDocument>('apitokens')
-      const allTokens = await tokensCollection.find({ status: 'active' })
+      const db = getMockDatabase();
+      const tokensCollection = db.collection<IApiToken>("apitokens");
+      const allTokens = await tokensCollection.find({ status: "active" });
 
       // Check each active token
       for (const tokenRecord of allTokens) {
-        const isValid = await verifyToken(token, tokenRecord.tokenHash)
+        const isValid = await verifyToken(token, tokenRecord.tokenHash);
 
         if (isValid) {
           // Check expiration
           if (new Date() > new Date(tokenRecord.expiresAt)) {
-            return null
+            return null;
           }
 
           // Update lastUsedAt
           await tokensCollection.updateOne(
             { _id: tokenRecord._id },
-            { $set: { lastUsedAt: new Date() } }
-          )
+            { $set: { lastUsedAt: new Date() } },
+          );
 
           return {
             userId: tokenRecord.userId,
             userEmail: tokenRecord.userEmail,
             userName: tokenRecord.userName,
             tokenId: tokenRecord._id,
-          }
+          };
         }
       }
 
-      return null
+      return null;
     }
 
     // Production mode
-    await connectDB()
-    const activeTokens = await ApiToken.find({ status: 'active' }).lean()
+    await connectDB();
+    const activeTokens = await ApiToken.find({ status: "active" }).lean();
 
     // Check each active token
     for (const tokenRecord of activeTokens) {
-      const isValid = await verifyToken(token, tokenRecord.tokenHash)
+      const isValid = await verifyToken(token, tokenRecord.tokenHash);
 
       if (isValid) {
         // Check expiration
         if (new Date() > new Date(tokenRecord.expiresAt)) {
-          return null
+          return null;
         }
 
         // Update lastUsedAt
         await ApiToken.updateOne(
           { _id: tokenRecord._id },
-          { $set: { lastUsedAt: new Date() } }
-        )
+          { $set: { lastUsedAt: new Date() } },
+        );
 
         return {
           userId: tokenRecord.userId,
           userEmail: tokenRecord.userEmail,
           userName: tokenRecord.userName,
           tokenId: String(tokenRecord._id),
-        }
+        };
       }
     }
 
-    return null
+    return null;
   } catch (error) {
-    console.error('Error validating API token:', error)
-    return null
+    console.error("Error validating API token:", error);
+    return null;
   }
 }
 
@@ -159,55 +165,55 @@ export async function validateApiToken(token: string): Promise<{
  */
 export async function revokeApiToken(
   tokenId: string,
-  userId: string
+  userId: string,
 ): Promise<boolean> {
   try {
     if (env.useMocks) {
-      const db = getMockDatabase()
-      const tokensCollection = db.collection<ApiTokenDocument>('apitokens')
+      const db = getMockDatabase();
+      const tokensCollection = db.collection<IApiToken>("apitokens");
 
-      const token = await tokensCollection.findOne({ _id: tokenId })
+      const token = await tokensCollection.findOne({ _id: tokenId });
       if (!token || token.userId !== userId) {
-        return false
+        return false;
       }
 
       await tokensCollection.updateOne(
         { _id: tokenId },
-        { $set: { status: 'revoked' } }
-      )
-      return true
+        { $set: { status: "revoked" } },
+      );
+      return true;
     }
 
-    await connectDB()
+    await connectDB();
     const result = await ApiToken.updateOne(
       { _id: tokenId, userId },
-      { $set: { status: 'revoked' } }
-    )
-    return result.modifiedCount > 0
+      { $set: { status: "revoked" } },
+    );
+    return result.modifiedCount > 0;
   } catch (error) {
-    console.error('Error revoking API token:', error)
-    return false
+    console.error("Error revoking API token:", error);
+    return false;
   }
 }
 
 /**
  * List all API tokens for a user
  */
-export async function listApiTokens(userId: string): Promise<ApiTokenDocument[]> {
+export async function listApiTokens(userId: string): Promise<IApiToken[]> {
   try {
     if (env.useMocks) {
-      const db = getMockDatabase()
-      const tokensCollection = db.collection<ApiTokenDocument>('apitokens')
-      return await tokensCollection.find({ userId })
+      const db = getMockDatabase();
+      const tokensCollection = db.collection<IApiToken>("apitokens");
+      return await tokensCollection.find({ userId });
     }
 
-    await connectDB()
+    await connectDB();
     const tokens = await ApiToken.find({ userId })
       .sort({ createdAt: -1 })
-      .lean()
-    return tokens
+      .lean();
+    return tokens as unknown as IApiToken[];
   } catch (error) {
-    console.error('Error listing API tokens:', error)
-    return []
+    console.error("Error listing API tokens:", error);
+    return [];
   }
 }

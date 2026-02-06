@@ -1,94 +1,89 @@
-import mongoose, { Schema, Document, Model } from 'mongoose'
+import mongoose, { Schema, Document, Model } from 'mongoose';
+
+export interface FederationExpose {
+  import: string;
+  name: string;
+  assets: {
+    js: { async: string[]; sync: string[]; };
+    css: { async: string[]; sync: string[]; };
+  };
+}
+
+export type FederationExposes = Record<string, FederationExpose | string>;
+
+export interface FederationShare {
+  version: string;
+  requiredVersion?: string;
+  singleton?: boolean;
+  eager?: boolean;
+  shareScope?: string;
+  assets: {
+    js: { async: string[]; sync: string[]; };
+    css: { async: string[]; sync: string[]; };
+  };
+}
+
+export type FederationShared = Record<string, FederationShare>;
+
+export interface FederationBuildMeta {
+  buildVersion: string;
+  globalName: string;
+  remoteEntryType: 'esm' | 'cjs' | 'umd';
+  remoteTypes?: string;
+  publicPath: string;
+  pluginVersion: string;
+  buildTime: Date;
+}
+
+export interface Federation {
+  name: string;
+  entry: string;
+  manifestUrl: string;
+  exposes: FederationExposes;
+  shared: FederationShared;
+  remotes?: Record<string, string>;
+  buildMeta: FederationBuildMeta;
+}
+
+export interface Asset {
+  url: string;
+  fileName: string;
+  hash: string;
+  size: number;
+}
+
+export interface Assets {
+  remoteEntry: Asset;
+  manifest: Asset;
+  assets: Asset[];
+}
+
+export interface PublishedBy {
+  userId: string;
+  email: string;
+  name: string;
+}
 
 export interface IVersion extends Document {
-  moduleId: string
-  moduleName: string
-  version: string
-  federation: {
-    name: string
-    entry: string
-    manifestUrl: string
-    exposes: Record<string, {
-      import: string
-      name: string
-      assets: {
-        js: { async: string[]; sync: string[] }
-        css: { async: string[]; sync: string[] }
-      }
-    }>
-    shared: Record<string, {
-      version: string
-      requiredVersion?: string
-      singleton?: boolean
-      eager?: boolean
-      shareScope?: string
-      assets: {
-        js: { async: string[]; sync: string[] }
-        css: { async: string[]; sync: string[] }
-      }
-    }>
-    remotes?: Record<string, string>
-    buildMeta: {
-      buildVersion: string
-      globalName: string
-      remoteEntryType: 'esm' | 'cjs' | 'umd'
-      remoteTypes?: string
-      publicPath: string
-      pluginVersion: string
-      buildTime: Date
-    }
-  }
-  assets: {
-    remoteEntry: {
-      url: string
-      hash: string
-      size: number
-    }
-    manifest: {
-      url: string
-      hash: string
-      size: number
-    }
-    stats: {
-      url: string
-      hash: string
-      size: number
-    }
-    types?: {
-      url: string
-      hash: string
-      size: number
-    }
-    chunks: Array<{
-      name: string
-      url: string
-      hash: string
-      size: number
-    }>
-    documentation?: {
-      url: string
-      hash: string
-      size: number
-    }
-  }
-  buildTool: 'webpack' | 'rspack' | 'rsbuild' | 'vite'
-  buildToolVersion: string
-  readme?: string
-  changelog?: string
-  dependencies: Record<string, string>
-  peerDependencies?: Record<string, string>
-  publishedBy: {
-    userId: string
-    email: string
-    name: string
-  }
-  publishedAt: Date
-  downloadCount: number
-  isPrerelease: boolean
-  isDeprecated: boolean
-  deprecationMessage?: string
-  createdAt: Date
-  updatedAt: Date
+  moduleId: string;
+  moduleName: string;
+  version: string;
+  federation: Federation;
+  assets: Assets;
+  buildTool: 'webpack' | 'rspack' | 'rsbuild' | 'vite';
+  buildToolVersion: string;
+  readme?: string;
+  changelog?: string;
+  dependencies: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  publishedBy: PublishedBy;
+  publishedAt: Date;
+  downloadCount: number;
+  isPrerelease: boolean;
+  isDeprecated: boolean;
+  deprecationMessage?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const VersionSchema = new Schema<IVersion>(
@@ -119,38 +114,25 @@ const VersionSchema = new Schema<IVersion>(
     },
     assets: {
       remoteEntry: {
-        url: { type: String, required: true },
+        fileName: { type: String, required: true },
         hash: { type: String, required: true },
         size: { type: Number, required: true },
+        url: { type: String, required: true },
       },
       manifest: {
-        url: { type: String, required: true },
+        fileName: { type: String, required: true },
         hash: { type: String, required: true },
         size: { type: Number, required: true },
-      },
-      stats: {
         url: { type: String, required: true },
-        hash: { type: String, required: true },
-        size: { type: Number, required: true },
       },
-      types: {
-        url: { type: String },
-        hash: { type: String },
-        size: { type: Number },
-      },
-      chunks: [
+      files: [
         {
-          name: { type: String, required: true },
-          url: { type: String, required: true },
+          fileName: { type: String, required: true },
           hash: { type: String, required: true },
           size: { type: Number, required: true },
-        },
-      ],
-      documentation: {
-        url: { type: String },
-        hash: { type: String },
-        size: { type: Number },
-      },
+          url: { type: String, required: true },
+        }
+      ]
     },
     buildTool: {
       type: String,
@@ -176,18 +158,17 @@ const VersionSchema = new Schema<IVersion>(
   {
     timestamps: true,
   }
-)
+);
 
 // Indexes
-VersionSchema.index({ moduleId: 1, version: -1 })
-VersionSchema.index({ moduleName: 1, version: -1 })
-VersionSchema.index({ publishedAt: -1 })
-VersionSchema.index({ 'federation.shared': 1 })
+VersionSchema.index({ moduleId: 1, version: -1 });
+VersionSchema.index({ moduleName: 1, version: -1 });
+VersionSchema.index({ publishedAt: -1 });
+VersionSchema.index({ 'federation.shared': 1 });
 
 // Compound unique index
-VersionSchema.index({ moduleId: 1, version: 1 }, { unique: true })
+VersionSchema.index({ moduleId: 1, version: 1 }, { unique: true });
 
-const VersionModel: Model<IVersion> =
-  mongoose.models.Version || mongoose.model<IVersion>('Version', VersionSchema)
-
-export default VersionModel
+export const Version =
+  mongoose.models.VersionV2 ||
+  mongoose.model<IVersion>('VersionV2', VersionSchema);

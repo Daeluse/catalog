@@ -1,53 +1,57 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Plus, Edit, Trash2, Globe } from 'lucide-react'
-import { LoadingSpinner } from '@/components/LoadingSpinner'
-import { ErrorMessage } from '@/components/ErrorMessage'
-import { Button } from '@/components/Button'
-import { Card } from '@/components/Card'
-import { EmptyState } from '@/components/EmptyState'
-import { ConfirmDialog } from '@/components/ConfirmDialog'
-import { useFetch } from '@/hooks/useFetch'
-import { apiDelete } from '@/lib/api-client'
-import type { Application, PaginatedResponse } from '@/types/api'
+import { useState } from "react";
+import Link from "next/link";
+import { Plus, Edit, Trash2, Globe } from "lucide-react";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { ErrorMessage } from "@/components/ErrorMessage";
+import { Button } from "@/components/Button";
+import { Card } from "@/components/Card";
+import { EmptyState } from "@/components/EmptyState";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useFetch } from "@/hooks/useFetch";
+import { apiDelete } from "@/lib/api-client";
+import type { PaginatedResponse } from "@/types/api";
+import { IApplication } from "@/models";
 
 export default function ApplicationsPage() {
-  const { data, loading, error, refetch } = useFetch<PaginatedResponse<Application>>('/api/applications')
-  const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [deleting, setDeleting] = useState(false)
-  const [deleteError, setDeleteError] = useState('')
+  const { data, loading, error, refetch } =
+    useFetch<PaginatedResponse<IApplication>>("/api/applications");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const handleDelete = async (id: string) => {
     try {
-      setDeleting(true)
-      setDeleteError('')
-      await apiDelete(`/api/applications/${id}`)
-      setDeleteId(null)
-      await refetch()
+      setDeleting(true);
+      setDeleteError("");
+      await apiDelete(`/api/applications/${id}`);
+      setDeleteId(null);
+      await refetch();
     } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : 'Failed to delete application')
+      setDeleteError(
+        err instanceof Error ? err.message : "Failed to delete application",
+      );
     } finally {
-      setDeleting(false)
+      setDeleting(false);
     }
-  }
+  };
 
   if (loading) {
-    return <LoadingSpinner fullScreen message="Loading applications..." />
+    return <LoadingSpinner fullScreen message="Loading applications..." />;
   }
 
-  const applications = data?.applications || []
+  const applications = data?.applications || [];
 
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="mb-2 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+          <h1 className="mb-2 text-3xl font-bold text-zinc-900">
             My Applications
           </h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="text-zinc-600">
             Manage your applications and their allowed origins for Module
             Federation access
           </p>
@@ -78,27 +82,29 @@ export default function ApplicationsPage() {
         /* Applications grid */
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {applications.map((app) => (
-            <Card key={app._id} variant="outlined" className="flex flex-col p-6">
+            <Card
+              key={app._id.toString()}
+              variant="outlined"
+              className="flex flex-col p-6"
+            >
               <div className="mb-4 flex-1">
-                <h3 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                <h3 className="mb-2 text-lg font-semibold text-zinc-900">
                   {app.name}
                 </h3>
-                <p className="mb-3 text-sm text-zinc-600 dark:text-zinc-400">
-                  {app.description}
-                </p>
-                <div className="space-y-2 text-xs text-zinc-500 dark:text-zinc-500">
+                <p className="mb-3 text-sm text-zinc-600">{app.description}</p>
+                <div className="space-y-2 text-xs text-zinc-500">
                   <div className="flex items-center gap-2">
                     <Globe className="h-3 w-3" />
                     <span>{app.origins.length} origin(s)</span>
                   </div>
                   <div>
-                    <span className="font-medium">Contact:</span>{' '}
+                    <span className="font-medium">Contact:</span>{" "}
                     {app.contactEmail}
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+              <div className="flex gap-2 border-t border-zinc-200 pt-4">
                 <Button
                   as={Link}
                   href={`/dashboard/applications/${app._id}/edit`}
@@ -112,8 +118,8 @@ export default function ApplicationsPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setDeleteId(app._id)}
-                  className="border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-900/20"
+                  onClick={() => setDeleteId(app._id.toString())}
+                  className="border border-red-300 text-red-600 hover:bg-red-50"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -135,5 +141,5 @@ export default function ApplicationsPage() {
         loading={deleting}
       />
     </div>
-  )
+  );
 }

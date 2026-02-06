@@ -1,9 +1,12 @@
 interface WizardProgressProps {
-  currentStep: number
-  steps: Array<{ num: number; label: string }>
+  currentStep: number;
+  steps: Array<{ num: number; label: string }>;
 }
 
-export default function WizardProgress({ currentStep, steps }: WizardProgressProps) {
+export default function WizardProgress({
+  currentStep,
+  steps,
+}: WizardProgressProps) {
   return (
     <div className="mb-8 flex items-center justify-center gap-4">
       {steps.map((s, idx, arr) => (
@@ -11,17 +14,15 @@ export default function WizardProgress({ currentStep, steps }: WizardProgressPro
           <div
             className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
               currentStep >= s.num
-                ? 'bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900'
-                : 'bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
+                ? "bg-zinc-900 text-white"
+                : "bg-zinc-200 text-zinc-600"
             }`}
           >
             {s.num}
           </div>
           <span
             className={`text-sm ${
-              currentStep >= s.num
-                ? 'text-zinc-900 dark:text-white'
-                : 'text-zinc-600 dark:text-zinc-400'
+              currentStep >= s.num ? "text-zinc-900" : "text-zinc-600"
             }`}
           >
             {s.label}
@@ -44,5 +45,5 @@ export default function WizardProgress({ currentStep, steps }: WizardProgressPro
         </div>
       ))}
     </div>
-  )
+  );
 }

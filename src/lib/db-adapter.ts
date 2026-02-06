@@ -3,24 +3,30 @@
  * Provides a unified interface for database operations across mock and production modes
  */
 
-import { connectDB } from './db'
-import { getMockDatabase } from './db-mock'
-import { env } from './env'
+import { Model } from "mongoose";
+import { connectDB } from "./db";
+import { getMockDatabase } from "./db-mock";
+import { env } from "./env";
 import {
-  ModuleDocument,
-  VersionDocument,
-  ApplicationDocument,
-  SubscriptionDocument,
-  ApiTokenDocument,
   MongoQuery,
   MongoUpdate,
   FindOptions,
   InsertResult,
   UpdateResult,
   DeleteResult,
-} from '@/types/database'
-import { Module, Version, Application, Subscription, ApiToken } from '@/models'
-import { Model } from 'mongoose'
+} from "@/types/database";
+import {
+  Module,
+  Version,
+  Application,
+  Subscription,
+  ApiToken,
+  IModule,
+  IVersion,
+  IApplication,
+  ISubscription,
+  IApiToken,
+} from "@/models";
 
 /**
  * Collection wrapper that works with both mock and real databases
@@ -28,119 +34,137 @@ import { Model } from 'mongoose'
 class CollectionAdapter<T> {
   constructor(
     private collectionName: string,
-    private model?: Model<T>
+    private model?: Model<T>,
   ) {}
 
   private getMockCollection() {
-    const db = getMockDatabase()
-    return db.collection<T>(this.collectionName)
+    const db = getMockDatabase();
+    return db.collection<T>(this.collectionName);
   }
 
-  async find(query: MongoQuery = {}, options?: FindOptions): Promise<(T & { _id: string; createdAt: Date; updatedAt: Date })[]> {
+  async find(
+    query: MongoQuery = {},
+    options?: FindOptions,
+  ): Promise<(T & { _id: string; createdAt: Date; updatedAt: Date })[]> {
     if (env.useMocks) {
-      const collection = this.getMockCollection()
-      let results = await collection.find(query)
+      const collection = this.getMockCollection();
+      let results = await collection.find(query);
 
       // Apply sorting
       if (options?.sort) {
-        const sortEntries = Object.entries(options.sort)
+        const sortEntries = Object.entries(options.sort);
         if (sortEntries.length > 0) {
-          const [field, order] = sortEntries[0]
+          const [field, order] = sortEntries[0];
           results.sort((a, b) => {
-            const aVal = (a as Record<string, unknown>)[field]
-            const bVal = (b as Record<string, unknown>)[field]
-            if (aVal === bVal) return 0
-            if (aVal == null) return 1
-            if (bVal == null) return -1
+            const aVal = (a as Record<string, unknown>)[field];
+            const bVal = (b as Record<string, unknown>)[field];
+            if (aVal === bVal) return 0;
+            if (aVal == null) return 1;
+            if (bVal == null) return -1;
             if (order === 1) {
-              return aVal > bVal ? 1 : -1
+              return aVal > bVal ? 1 : -1;
             } else {
-              return aVal < bVal ? 1 : -1
+              return aVal < bVal ? 1 : -1;
             }
-          })
+          });
         }
       }
 
       // Apply skip and limit
       if (options?.skip) {
-        results = results.slice(options.skip)
+        results = results.slice(options.skip);
       }
       if (options?.limit) {
-        results = results.slice(0, options.limit)
+        results = results.slice(0, options.limit);
       }
 
-      return results
+      return results;
     } else {
-      if (!this.model) throw new Error('Mongoose model not provided')
-      await connectDB()
-      let queryBuilder = this.model.find(query)
+      if (!this.model) throw new Error("Mongoose model not provided");
+      await connectDB();
+      let queryBuilder = this.model.find(query);
 
-      if (options?.sort) queryBuilder = queryBuilder.sort(options.sort)
-      if (options?.limit) queryBuilder = queryBuilder.limit(options.limit)
-      if (options?.skip) queryBuilder = queryBuilder.skip(options.skip)
+      if (options?.sort) queryBuilder = queryBuilder.sort(options.sort);
+      if (options?.limit) queryBuilder = queryBuilder.limit(options.limit);
+      if (options?.skip) queryBuilder = queryBuilder.skip(options.skip);
 
-      return await queryBuilder.lean() as (T & { _id: string; createdAt: Date; updatedAt: Date })[]
+      return (await queryBuilder.lean()) as (T & {
+        _id: string;
+        createdAt: Date;
+        updatedAt: Date;
+      })[];
     }
   }
 
-  async findOne(query: MongoQuery): Promise<(T & { _id: string; createdAt: Date; updatedAt: Date }) | null> {
+  async findOne(
+    query: MongoQuery,
+  ): Promise<(T & { _id: string; createdAt: Date; updatedAt: Date }) | null> {
     if (env.useMocks) {
-      const collection = this.getMockCollection()
-      return await collection.findOne(query)
+      const collection = this.getMockCollection();
+      return await collection.findOne(query);
     } else {
-      if (!this.model) throw new Error('Mongoose model not provided')
-      await connectDB()
-      return await this.model.findOne(query).lean() as (T & { _id: string; createdAt: Date; updatedAt: Date }) | null
+      if (!this.model) throw new Error("Mongoose model not provided");
+      await connectDB();
+      return (await this.model.findOne(query).lean()) as
+        | (T & { _id: string; createdAt: Date; updatedAt: Date })
+        | null;
     }
   }
 
-  async insertOne(doc: Partial<T> & Record<string, unknown>): Promise<InsertResult> {
+  async insertOne(
+    doc: Partial<T> & Record<string, unknown>,
+  ): Promise<InsertResult> {
     if (env.useMocks) {
-      const collection = this.getMockCollection()
-      return await collection.insertOne(doc)
+      const collection = this.getMockCollection();
+      return await collection.insertOne(doc);
     } else {
-      if (!this.model) throw new Error('Mongoose model not provided')
-      await connectDB()
-      const created = await this.model.create(doc)
-      return { insertedId: created._id.toString() }
+      if (!this.model) throw new Error("Mongoose model not provided");
+      await connectDB();
+      const created = (await this.model.create(doc)) as T & {
+        _id: string;
+      }
+      return { insertedId: created._id.toString() };
     }
   }
 
-  async updateOne(query: MongoQuery, update: MongoUpdate<T>): Promise<UpdateResult> {
+  async updateOne(
+    query: MongoQuery,
+    update: MongoUpdate<T>,
+  ): Promise<UpdateResult> {
     if (env.useMocks) {
-      const collection = this.getMockCollection()
-      return await collection.updateOne(query, update)
+      const collection = this.getMockCollection();
+      return await collection.updateOne(query, update);
     } else {
-      if (!this.model) throw new Error('Mongoose model not provided')
-      await connectDB()
-      const result = await this.model.updateOne(query, update)
+      if (!this.model) throw new Error("Mongoose model not provided");
+      await connectDB();
+      const result = await this.model.updateOne(query, update);
       return {
         modifiedCount: result.modifiedCount,
         matchedCount: result.matchedCount,
-      }
+      };
     }
   }
 
   async deleteOne(query: MongoQuery): Promise<DeleteResult> {
     if (env.useMocks) {
-      const collection = this.getMockCollection()
-      return await collection.deleteOne(query)
+      const collection = this.getMockCollection();
+      return await collection.deleteOne(query);
     } else {
-      if (!this.model) throw new Error('Mongoose model not provided')
-      await connectDB()
-      const result = await this.model.deleteOne(query)
-      return { deletedCount: result.deletedCount }
+      if (!this.model) throw new Error("Mongoose model not provided");
+      await connectDB();
+      const result = await this.model.deleteOne(query);
+      return { deletedCount: result.deletedCount };
     }
   }
 
   async countDocuments(query: MongoQuery = {}): Promise<number> {
     if (env.useMocks) {
-      const collection = this.getMockCollection()
-      return await collection.countDocuments(query)
+      const collection = this.getMockCollection();
+      return await collection.countDocuments(query);
     } else {
-      if (!this.model) throw new Error('Mongoose model not provided')
-      await connectDB()
-      return await this.model.countDocuments(query)
+      if (!this.model) throw new Error("Mongoose model not provided");
+      await connectDB();
+      return await this.model.countDocuments(query);
     }
   }
 }
@@ -149,35 +173,46 @@ class CollectionAdapter<T> {
  * Database adapter providing access to all collections
  */
 export const db = {
-  modules: new CollectionAdapter<ModuleDocument>('modules', Module),
-  versions: new CollectionAdapter<VersionDocument>('versions', Version),
-  applications: new CollectionAdapter<ApplicationDocument>('applications', Application),
-  subscriptions: new CollectionAdapter<SubscriptionDocument>('subscriptions', Subscription),
-  apiTokens: new CollectionAdapter<ApiTokenDocument>('apitokens', ApiToken),
-}
+  modules: new CollectionAdapter<IModule>("modules", Module),
+  versions: new CollectionAdapter<IVersion>("versions", Version),
+  applications: new CollectionAdapter<IApplication>(
+    "applications",
+    Application,
+  ),
+  subscriptions: new CollectionAdapter<ISubscription>(
+    "subscriptions",
+    Subscription,
+  ),
+  apiTokens: new CollectionAdapter<IApiToken>("apitokens", ApiToken),
+};
 
 /**
  * Helper to get a document by ID (works with Mongoose models in non-mock mode)
  */
 export async function findById<T>(
-  collectionName: 'modules' | 'versions' | 'applications' | 'subscriptions' | 'apitokens',
-  id: string
+  collectionName:
+    | "modules"
+    | "versions"
+    | "applications"
+    | "subscriptions"
+    | "apitokens",
+  id: string,
 ): Promise<T | null> {
   if (env.useMocks) {
-    const mockDb = getMockDatabase()
-    const collection = mockDb.collection(collectionName)
-    return await collection.findOne({ _id: id }) as unknown as T | null
+    const mockDb = getMockDatabase();
+    const collection = mockDb.collection(collectionName);
+    return (await collection.findOne({ _id: id })) as unknown as T | null;
   } else {
-    await connectDB()
+    await connectDB();
     const models: Record<string, Model<unknown>> = {
       modules: Module,
       versions: Version,
       applications: Application,
       subscriptions: Subscription,
       apitokens: ApiToken,
-    }
-    const model = models[collectionName]
-    const result = await model.findById(id)
-    return result ? (result.toObject() as T) : null
+    };
+    const model = models[collectionName];
+    const result = await model.findById(id);
+    return result ? (result.toObject() as T) : null;
   }
 }
