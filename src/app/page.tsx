@@ -194,7 +194,7 @@ export default function Home() {
                 <Card
                   key={module._id.toString()}
                   as={Link}
-                  href={`/modules/${module.name.replaceAll("/", "%2F")}`}
+                  href={`/modules/${encodeURIComponent(module.name)}`}
                   className="group p-6 transition-all hover:shadow-md"
                 >
                   <div className="flex items-start justify-between">

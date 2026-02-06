@@ -1,0 +1,105 @@
+# Applications & Subscriptions
+
+The catalog uses an application and subscription model to manage CORS access to module assets. Before a consuming application can load federated modules from the catalog, it must be registered and have an approved subscription.
+
+## Applications
+
+An application represents a consuming web application that loads federated modules at runtime. Each application registers the **origins** (domains) from which it will make requests to the catalog's asset and API endpoints.
+
+### Registering an Application
+
+1. Navigate to **Dashboard > Applications**
+2. Click **New Application**
+3. Fill in the required fields:
+
+| Field | Description | Example |
+|---|---|---|
+| **Name** | A descriptive name for the application | `Customer Portal` |
+| **Description** | Brief description of the application | `Public-facing customer self-service portal` |
+| **Contact Email** | Email address for the application owner | `team@example.com` |
+| **Origins** | One or more allowed CORS origins | `https://portal.example.com` |
+
+### Origin Rules
+
+Origins define where the application is hosted. They are used for CORS validation when the catalog serves module assets.
+
+- Origins must include the protocol and domain (e.g. `https://myapp.example.com`)
+- Do not include paths, query strings, or trailing slashes
+- Add all environments where the application runs (e.g. `https://myapp.example.com`, `https://staging.myapp.example.com`)
+- For local development, add `http://localhost:3000` (or your dev server port)
+
+### Managing Origins
+
+You can update an application's origins at any time from the application edit page. Add or remove origins as your deployment topology changes.
+
+## Subscriptions
+
+Subscriptions link an application to a module, granting CORS access to that module's assets from the application's registered origins.
+
+### Subscription Workflow
+
+```
+Request       Review        Outcome
+───────────────────────────────────────
+Application ──► pending ──► approved   (access granted)
+  owner          │
+                 ├────────► rejected   (access denied)
+                 │
+                 └── approved ──► revoked (access removed)
+```
+
+### Requesting a Subscription
+
+1. Navigate to **Dashboard > Subscriptions**
+2. Click **New Subscription**
+3. Select the **Application** that will consume the module
+4. Select the **Module** you want to access
+5. Submit the request
+
+The subscription is created with a **pending** status and awaits review by the module owner or a maintainer with write access.
+
+### Reviewing Subscriptions (Module Owners)
+
+As a module owner or maintainer, you can review pending subscription requests:
+
+1. Navigate to **Dashboard > Subscriptions**
+2. Filter by **Pending** status to see requests awaiting review
+3. For each request, you can:
+   - **Approve** — Grants the application CORS access to the module's assets
+   - **Reject** — Denies the request (with optional notes explaining why)
+4. Optionally add **review notes** with your decision
+
+### Revoking Access
+
+Approved subscriptions can be revoked at any time by the module owner or a maintainer. Revoking a subscription removes CORS access for the application's origins. This is useful when:
+
+- An application is decommissioned
+- Access needs to be temporarily suspended
+- Security concerns arise about the consuming application
+
+### Subscription Statuses
+
+| Status | Meaning |
+|---|---|
+| **Pending** | Request submitted, awaiting review |
+| **Approved** | Access granted, CORS origins are allowed |
+| **Rejected** | Request denied by the module owner |
+| **Revoked** | Previously approved access has been removed |
+
+## How CORS Access Works
+
+When an application makes a request to load a module's assets (e.g. `remoteEntry.js`), the catalog validates the request's `Origin` header against the approved subscriptions:
+
+1. The request origin is matched against registered applications
+2. The catalog checks if the application has an **approved** subscription to the requested module
+3. If approved, the response includes the appropriate CORS headers allowing the browser to load the asset
+4. If not approved, the request is denied with a CORS error
+
+This mechanism ensures that only explicitly authorized applications can load federated modules from the catalog.
+
+## Best Practices
+
+- **Register separate applications** for each independently deployed frontend, even if they are managed by the same team
+- **Include all environment origins** (development, staging, production) in your application registration
+- **Review subscriptions promptly** to unblock consuming teams
+- **Revoke access** rather than deleting subscriptions, so there is an audit trail of access changes

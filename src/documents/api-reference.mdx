@@ -1,0 +1,470 @@
+# API Reference
+
+The catalog exposes a REST API for programmatic access to all features. Authenticate with a session cookie (browser) or a Bearer token (API tokens). See [API Tokens](/documentation/api-tokens) for setting up programmatic access.
+
+## Authentication
+
+All authenticated endpoints accept either:
+
+- **Session cookie** — Automatically set when signed in via the web UI
+- **Bearer token** — Pass an API token in the `Authorization` header:
+
+```
+Authorization: Bearer mfc_abc123...
+```
+
+Endpoints marked **(Public)** do not require authentication. Endpoints marked **(Auth)** require a valid session or token. Endpoints marked **(Owner)** require ownership of the resource.
+
+## Rate Limiting
+
+API token requests are rate-limited to **1,000 requests per hour** per token. Rate limit information is returned in response headers:
+
+| Header | Description |
+|---|---|
+| `X-RateLimit-Limit` | Maximum requests per hour |
+| `X-RateLimit-Remaining` | Remaining requests in the current window |
+| `X-RateLimit-Reset` | Unix timestamp when the window resets |
+| `Retry-After` | Seconds to wait before retrying (only on 429 responses) |
+
+---
+
+## Modules
+
+### List Modules (Public)
+
+```
+GET /api/modules
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `search` | string | — | Search name, displayName, description, keywords |
+| `category` | string | — | Filter: `navigation`, `ui`, `shared`, `feature`, `utility`, `other` |
+| `organization` | string | — | Filter by organization |
+| `sort` | string | `updated` | Sort: `updated`, `downloads`, `name` |
+| `limit` | number | `20` | Results per page |
+| `skip` | number | `0` | Pagination offset |
+
+**Response (200):**
+
+```json
+{
+  "modules": [
+    {
+      "_id": "...",
+      "name": "@myorg/header",
+      "displayName": "Header Navigation",
+      "description": "Shared header component",
+      "organization": "myorg",
+      "category": "navigation",
+      "status": "active",
+      "latestVersion": "1.2.0",
+      "totalDownloads": 1250,
+      "weeklyDownloads": 85,
+      "owner": { "userId": "...", "email": "...", "name": "..." },
+      "keywords": ["header", "navigation"],
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
+  ],
+  "total": 42,
+  "limit": 20,
+  "skip": 0
+}
+```
+
+### Create Module (Auth)
+
+```
+POST /api/modules
+```
+
+**Request Body:**
+
+```json
+{
+  "name": "@myorg/header",
+  "displayName": "Header Navigation",
+  "description": "Shared header component with responsive navigation",
+  "organization": "myorg",
+  "category": "navigation",
+  "repository": "https://github.com/myorg/header",
+  "homepage": "https://myorg.github.io/header",
+  "keywords": ["header", "navigation"]
+}
+```
+
+Required fields: `name`, `displayName`, `description`, `organization`, `category`. The `name` field must match the pattern `@org/name` or `name`.
+
+**Response (201):** Created module object.
+
+### Get Module (Public)
+
+```
+GET /api/modules/{name}
+```
+
+Returns the full module object including owner and maintainer details.
+
+### Update Module (Owner/Maintainer)
+
+```
+PATCH /api/modules/{name}
+```
+
+Updatable fields: `displayName`, `description`, `repository`, `homepage`, `keywords`, `category`, `icon`, `status`.
+
+### Delete Module (Owner)
+
+```
+DELETE /api/modules/{name}
+```
+
+---
+
+## Versions
+
+### List Versions (Public)
+
+```
+GET /api/modules/{name}/versions
+```
+
+Returns all versions for a module, sorted by semver descending.
+
+**Response (200):**
+
+```json
+{
+  "versions": [
+    {
+      "_id": "...",
+      "version": "1.2.0",
+      "moduleName": "@myorg/header",
+      "buildTool": "webpack",
+      "buildToolVersion": "5.90.0",
+      "federation": {
+        "name": "@myorg/header",
+        "entry": "remoteEntry.js",
+        "exposes": { "./Button": { "path": "./Button", "name": "Button" } },
+        "shared": { "react": { "singleton": true } },
+        "buildMeta": { "remoteEntryType": "esm", "publicPath": "auto" }
+      },
+      "assets": {
+        "remoteEntry": { "url": "...", "fileName": "remoteEntry.js", "size": 12345 },
+        "manifest": { "url": "...", "fileName": "mf-manifest.json", "size": 678 },
+        "files": []
+      },
+      "isPrerelease": false,
+      "isDeprecated": false,
+      "downloadCount": 340,
+      "publishedAt": "..."
+    }
+  ]
+}
+```
+
+### Publish Version (Owner/Maintainer with write)
+
+Publishing a version is a two-step process: upload assets first, then create the version record.
+
+#### Upload Assets
+
+```
+POST /api/modules/{name}/versions/assets
+Content-Type: multipart/form-data
+```
+
+**Form Fields:**
+
+| Field | Description |
+|---|---|
+| `version` | The semver version string |
+| `files` | One or more build output files (must include `mf-manifest.json`) |
+| `paths` | Relative file paths matching each uploaded file |
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "assets": [{ "url": "...", "fileName": "...", "hash": "...", "size": 1234 }],
+    "remoteEntry": { "url": "...", "fileName": "remoteEntry.js", "hash": "...", "size": 5678 },
+    "manifest": { "url": "...", "fileName": "mf-manifest.json", "hash": "...", "size": 910 }
+  },
+  "message": "Successfully uploaded 3 file(s)"
+}
+```
+
+#### Create Version
+
+```
+POST /api/modules/{name}/versions
+```
+
+**Request Body:**
+
+```json
+{
+  "version": "1.2.0",
+  "buildTool": "webpack",
+  "buildToolVersion": "5.90.0",
+  "federation": { "..." },
+  "assets": { "..." },
+  "readme": "## Installation\n...",
+  "changelog": "### 1.2.0\n- Added Button component",
+  "dependencies": { "react": "^18.0.0" },
+  "peerDependencies": { "react-dom": "^18.0.0" }
+}
+```
+
+Required fields: `version`, `buildTool`, `buildToolVersion`, `federation`, `assets`.
+
+**Response (201):** Created version object.
+
+### Delete Version (Owner/Maintainer)
+
+```
+DELETE /api/modules/{name}/versions/{version}
+```
+
+### Resolve Version Tag (Public)
+
+```
+GET /api/modules/{name}/resolve/{tag}
+```
+
+See [Version Management](/documentation/version-management) for supported tags and response format.
+
+---
+
+## Applications
+
+### List Applications (Auth)
+
+```
+GET /api/applications
+```
+
+Returns applications owned by the authenticated user.
+
+**Query Parameters:** `limit` (default 20), `skip` (default 0).
+
+### Create Application (Auth)
+
+```
+POST /api/applications
+```
+
+**Request Body:**
+
+```json
+{
+  "name": "Customer Portal",
+  "description": "Public-facing customer portal",
+  "contactEmail": "team@example.com",
+  "origins": ["https://portal.example.com", "http://localhost:3000"]
+}
+```
+
+All fields required. Origins must be valid protocol + domain (no paths).
+
+**Response (201):** Created application object.
+
+### Get Application (Owner)
+
+```
+GET /api/applications/{id}
+```
+
+### Update Application (Owner)
+
+```
+PATCH /api/applications/{id}
+```
+
+Updatable fields: `name`, `description`, `contactEmail`, `origins`.
+
+### Delete Application (Owner)
+
+```
+DELETE /api/applications/{id}
+```
+
+Deleting an application also removes all associated subscriptions.
+
+---
+
+## Subscriptions
+
+### List Subscriptions (Auth)
+
+```
+GET /api/subscriptions
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `status` | string | Filter: `pending`, `approved`, `rejected`, `revoked` |
+| `moduleId` | string | Filter by module |
+| `limit` | number | Results per page (default 50) |
+| `skip` | number | Pagination offset |
+
+### Create Subscription (Auth)
+
+```
+POST /api/subscriptions
+```
+
+**Request Body:**
+
+```json
+{
+  "applicationId": "...",
+  "moduleId": "..."
+}
+```
+
+The application must be owned by the authenticated user and the module must be active. Duplicate subscriptions for the same application-module pair are not allowed.
+
+**Response (201):** Created subscription with `status: "pending"`.
+
+### Approve Subscription (Module Owner/Maintainer)
+
+```
+PATCH /api/subscriptions/{id}/approve
+```
+
+**Request Body (optional):**
+
+```json
+{
+  "reviewNotes": "Approved for production use"
+}
+```
+
+### Reject Subscription (Module Owner/Maintainer)
+
+```
+PATCH /api/subscriptions/{id}/reject
+```
+
+**Request Body (optional):**
+
+```json
+{
+  "reviewNotes": "Origin not recognized, please verify"
+}
+```
+
+### Revoke Subscription (Module Owner/Maintainer)
+
+```
+PATCH /api/subscriptions/{id}/revoke
+```
+
+### Delete Subscription (Owner/Requester)
+
+```
+DELETE /api/subscriptions/{id}
+```
+
+---
+
+## API Tokens
+
+### List Tokens (Auth)
+
+```
+GET /api/api-tokens
+```
+
+Returns all tokens for the authenticated user. Token hashes are never returned.
+
+### Create Token (Auth)
+
+```
+POST /api/api-tokens
+```
+
+**Request Body:**
+
+```json
+{
+  "name": "CI Pipeline Token",
+  "expiresInDays": 90
+}
+```
+
+`expiresInDays` must be one of: `30`, `60`, `90`, `365`.
+
+**Response (201):**
+
+```json
+{
+  "data": {
+    "token": "mfc_abc123...",
+    "record": {
+      "_id": "...",
+      "name": "CI Pipeline Token",
+      "expiresAt": "...",
+      "status": "active",
+      "createdAt": "..."
+    }
+  }
+}
+```
+
+The `token` value is only returned once at creation time. Store it securely.
+
+### Revoke Token (Owner)
+
+```
+DELETE /api/api-tokens/{id}/delete
+```
+
+---
+
+## Health Check
+
+```
+GET /api/health
+```
+
+Returns a 200 status indicating the service is running.
+
+## Standard Error Responses
+
+| Status | Meaning |
+|---|---|
+| 400 | Bad request / validation error |
+| 401 | Not authenticated |
+| 403 | Forbidden (insufficient permissions) |
+| 404 | Resource not found |
+| 409 | Conflict (duplicate resource) |
+| 422 | Validation error with field-level details |
+| 429 | Rate limit exceeded |
+| 500 | Internal server error |
+
+Error responses follow this format:
+
+```json
+{
+  "success": false,
+  "error": "Description of what went wrong"
+}
+```
+
+Validation errors (422) include an `errors` array with field-level details:
+
+```json
+{
+  "error": "Validation failed",
+  "errors": ["Version must be a valid semver string", "Build tool is required"]
+}
+```

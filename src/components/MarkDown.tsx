@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { compile, run } from "@mdx-js/mdx";
 import * as runtime from "react/jsx-runtime";
+import remarkGfm from "remark-gfm";
+
 import "@/app/md.css";
 
 export type MDXProps = {
@@ -12,7 +14,8 @@ async function compileMarkdown(props: MDXProps) {
   const code = String(
     await compile(props.content, {
       outputFormat: "function-body",
-    })
+      remarkPlugins: [remarkGfm],
+    }),
   );
   return run(code, {
     ...runtime,

@@ -1,0 +1,151 @@
+# API Tokens
+
+API tokens provide programmatic access to the catalog for CI/CD pipelines, automation scripts, and external integrations. Tokens authenticate as your user account and are subject to rate limiting.
+
+## Creating a Token
+
+1. Navigate to **Dashboard > API Tokens**
+2. Click **Generate New Token**
+3. Enter a **name** to identify the token's purpose (e.g. "CI Pipeline", "Deploy Script")
+4. Select an **expiration period**: 30 days, 60 days, 90 days, or 365 days
+5. Click **Create**
+
+The token value is displayed **only once** at creation time. Copy and store it securely — it cannot be retrieved later.
+
+Token format: `mfc_` followed by a random string.
+
+## Using a Token
+
+Include the token in the `Authorization` header of your HTTP requests:
+
+```
+Authorization: Bearer mfc_abc123...
+```
+
+### Example: Publish a Version via cURL
+
+```bash
+# Upload assets
+curl -X POST \
+  -H "Authorization: Bearer $CATALOG_TOKEN" \
+  -F "version=1.2.0" \
+  -F "files=@dist/remoteEntry.js" \
+  -F "paths=remoteEntry.js" \
+  -F "files=@dist/mf-manifest.json" \
+  -F "paths=mf-manifest.json" \
+  https://catalog.example.com/api/modules/@myorg/header/versions/assets
+
+# Create version record
+curl -X POST \
+  -H "Authorization: Bearer $CATALOG_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "version": "1.2.0",
+    "buildTool": "webpack",
+    "buildToolVersion": "5.90.0",
+    "federation": { ... },
+    "assets": { ... }
+  }' \
+  https://catalog.example.com/api/modules/@myorg/header/versions
+```
+
+### Example: Resolve a Version Tag
+
+```bash
+# No authentication required for version resolution
+curl https://catalog.example.com/api/modules/@myorg/header/resolve/latest
+```
+
+### Example: Create a Subscription
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer $CATALOG_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "applicationId": "abc123",
+    "moduleId": "def456"
+  }' \
+  https://catalog.example.com/api/subscriptions
+```
+
+## Rate Limiting
+
+Each token is limited to **1,000 requests per hour**. Rate limit status is returned in response headers:
+
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 997
+X-RateLimit-Reset: 1700000000
+```
+
+When the limit is exceeded, the API returns a `429 Too Many Requests` response with a `Retry-After` header indicating how many seconds to wait.
+
+## Managing Tokens
+
+### Viewing Tokens
+
+The **API Tokens** dashboard page lists all your tokens with:
+
+- Token name
+- Expiration date
+- Last used timestamp
+- Status (active or revoked)
+
+The actual token value is never displayed after creation.
+
+### Revoking Tokens
+
+To revoke a token, click the delete button next to it on the API Tokens page. Revoked tokens immediately stop working. Revocation cannot be undone — you would need to create a new token.
+
+## Security Best Practices
+
+- **Never commit tokens** to source control. Use environment variables or a secrets manager.
+- **Use descriptive names** so you can identify which system uses each token.
+- **Set the shortest practical expiration.** Use 30 or 60 day tokens for CI pipelines and rotate them on schedule.
+- **Revoke tokens immediately** when they are no longer needed or if you suspect they have been compromised.
+- **One token per system** — create separate tokens for each CI pipeline, deploy script, or integration so they can be revoked independently.
+
+## CI/CD Integration Example
+
+### GitHub Actions
+
+```yaml
+name: Publish Module
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install and Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Upload Assets
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CATALOG_TOKEN }}" \
+            -F "version=${{ github.ref_name }}" \
+            -F "files=@dist/remoteEntry.js" \
+            -F "paths=remoteEntry.js" \
+            -F "files=@dist/mf-manifest.json" \
+            -F "paths=mf-manifest.json" \
+            https://catalog.example.com/api/modules/@myorg/header/versions/assets
+
+      - name: Publish Version
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CATALOG_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d @version-payload.json \
+            https://catalog.example.com/api/modules/@myorg/header/versions
+```
+
+Store the `CATALOG_TOKEN` as a repository secret in your CI provider.

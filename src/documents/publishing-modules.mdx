@@ -1,0 +1,143 @@
+# Publishing Modules
+
+This guide walks through registering a new module in the catalog and publishing versions with federation metadata and build assets.
+
+## Step 1: Register a Module
+
+Navigate to the **Dashboard** and click **Create New Module**. Fill in the required fields:
+
+| Field | Description | Example |
+|---|---|---|
+| **Name** | Unique identifier. Supports scoped names. Must match `@org/name` or `name`. | `@myorg/header` |
+| **Display Name** | Human-readable name shown in the catalog | `Header Navigation` |
+| **Description** | Brief summary of the module's purpose | `Shared header component with responsive navigation` |
+| **Organization** | Owning team or organization name | `myorg` |
+| **Category** | Classification for catalog browsing | One of: Navigation, UI Components, Shared Libraries, Features, Utilities, Other |
+
+Optional fields include **Repository URL**, **Homepage URL**, **Keywords** (for search), and **Icon URL**.
+
+Once created, you become the module **owner** with full administrative access.
+
+## Step 2: Prepare Your Build
+
+Before publishing, ensure your project is configured with Module Federation and produces the required artifacts.
+
+### Required Artifacts
+
+Your build must produce:
+
+1. **`mf-manifest.json`** — The Module Federation manifest file containing federation metadata (exposed modules, shared dependencies, remote entry info). This file is required during upload.
+2. **Remote entry file** — The entry point for your federated module (e.g. `remoteEntry.js`).
+3. **Additional assets** — Any other files your module needs at runtime (chunks, CSS, etc.).
+
+### Build Tool Configuration
+
+Configure your build tool to expose modules and generate the manifest:
+
+**Webpack / Rspack**
+```js
+const { ModuleFederationPlugin } = require('@module-federation/enhanced/webpack');
+
+module.exports = {
+  plugins: [
+    new ModuleFederationPlugin({
+      name: 'myModule',
+      filename: 'remoteEntry.js',
+      exposes: {
+        './Button': './src/components/Button',
+        './utils': './src/utils/index',
+      },
+      shared: {
+        react: { singleton: true, requiredVersion: '^18.0.0' },
+        'react-dom': { singleton: true, requiredVersion: '^18.0.0' },
+      },
+    }),
+  ],
+};
+```
+
+**Rsbuild**
+```js
+import { pluginModuleFederation } from '@module-federation/rsbuild-plugin';
+
+export default {
+  plugins: [
+    pluginModuleFederation({
+      name: 'myModule',
+      exposes: {
+        './Button': './src/components/Button',
+      },
+      shared: ['react', 'react-dom'],
+    }),
+  ],
+};
+```
+
+**Vite**
+```js
+import { federation } from '@module-federation/vite';
+
+export default {
+  plugins: [
+    federation({
+      name: 'myModule',
+      filename: 'remoteEntry.js',
+      exposes: {
+        './Button': './src/components/Button',
+      },
+      shared: ['react', 'react-dom'],
+    }),
+  ],
+};
+```
+
+## Step 3: Publish a Version
+
+Navigate to your module's detail page and click **Publish New Version**. The publishing wizard has three steps:
+
+### 3a. Version Information
+
+- **Version** — A valid semantic version string (e.g. `1.0.0`, `2.1.0-beta.1`). Versions with pre-release identifiers like `-alpha`, `-beta`, or `-rc` are automatically marked as pre-releases.
+- **Build Tool** — Select the bundler used to build this version (Webpack, Rspack, Rsbuild, or Vite).
+- **Build Tool Version** — The version of the build tool used.
+- **Changelog** (optional) — Release notes for this version.
+
+### 3b. Upload Assets
+
+Upload your build output files. The upload requires:
+
+- At least one file must be the `mf-manifest.json` manifest
+- The manifest is parsed to extract federation metadata (exposed modules, shared dependencies, build info)
+- All uploaded files are stored and served from the catalog's asset storage
+
+Files are stored at the path `{moduleName}/versions/{version}/{relativePath}` and served via the catalog's asset API.
+
+### 3c. Review & Publish
+
+Review the summary of your version including:
+
+- Version number, build tool, and changelog
+- Uploaded assets with file names and sizes
+- Federation metadata extracted from the manifest (exposed modules, shared deps, remote entry type)
+
+Click **Publish** to finalize. The module's `latestVersion` field is automatically updated if this version is newer than the current latest.
+
+## Managing Maintainers
+
+Module owners can add maintainers with different permission levels:
+
+| Role | Permissions |
+|---|---|
+| **admin** | Full access: edit module, publish versions, manage maintainers, approve subscriptions |
+| **write** | Publish new versions, approve/reject subscription requests |
+| **read** | View module details (no modification access) |
+
+## Module Status
+
+Modules have three possible statuses:
+
+- **Active** — Module is live and available in the catalog
+- **Deprecated** — Module is still available but marked as deprecated (discourages new usage)
+- **Archived** — Module is hidden from the catalog listing
+
+Change a module's status from its edit page on the dashboard.

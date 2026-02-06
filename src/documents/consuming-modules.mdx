@@ -1,0 +1,212 @@
+# Consuming Modules
+
+This guide covers how to discover modules in the catalog and integrate them into your application using Module Federation. There are two primary approaches: **runtime loading** and **build-time configuration**.
+
+## Discovering Modules
+
+Browse the catalog homepage to find modules. Use the search bar to search by name, description, or keywords. Filter by category and sort by relevance, downloads, or recency.
+
+Click a module card to view its detail page, which shows:
+
+- Description and keywords
+- Available versions with federation metadata
+- Installation instructions tailored to the selected version and build tool
+- Download statistics and module metadata
+
+## Runtime Approach
+
+The runtime approach loads remote modules dynamically without requiring them to be configured at build time. This is useful for dynamic plugin systems or when remote URLs may change between deployments.
+
+### 1. Install the Runtime
+
+```bash
+npm install @module-federation/enhanced
+```
+
+### 2. Initialize and Load
+
+```js
+import { init, loadRemote } from '@module-federation/enhanced/runtime';
+
+// Initialize the runtime (once, at app startup)
+init({
+  name: 'myApp',
+  remotes: [],
+});
+
+// Load a remote module dynamically
+const remoteModule = await loadRemote('@myorg/header', {
+  entry: 'https://catalog.example.com/api/assets/container/@myorg/header/versions/1.0.0/remoteEntry.js',
+});
+```
+
+### 3. Use Exposed Modules
+
+Once loaded, access the module's exposed components or utilities:
+
+```jsx
+// Dynamic import of an exposed module
+const { Button } = await remoteModule.get('./Button');
+
+// In a React component
+function MyPage() {
+  const [RemoteButton, setRemoteButton] = useState(null);
+
+  useEffect(() => {
+    loadRemote('@myorg/header', {
+      entry: remoteEntryUrl,
+    }).then(async (module) => {
+      const { Button } = await module.get('./Button');
+      setRemoteButton(() => Button);
+    });
+  }, []);
+
+  return RemoteButton ? <RemoteButton label="Click me" /> : <div>Loading...</div>;
+}
+```
+
+### 4. Dynamic Version Resolution
+
+Instead of hardcoding version URLs, use the catalog's version resolution API to look up the correct remote entry at runtime:
+
+```js
+// Resolve the "latest" stable version
+const response = await fetch('/api/modules/@myorg/header/resolve/latest');
+const { remoteEntry, resolvedVersion } = await response.json();
+
+// Use the resolved URL
+const remoteModule = await loadRemote('@myorg/header', {
+  entry: remoteEntry,
+});
+```
+
+See [Version Management](/documentation/version-management) for supported tags and resolution rules.
+
+## Build-Time Approach
+
+The build-time approach configures remotes in your bundler configuration. The remote entry URLs are resolved at build time and baked into your application bundle.
+
+### Webpack
+
+```bash
+npm install @module-federation/enhanced
+```
+
+```js
+// webpack.config.js
+const { ModuleFederationPlugin } = require('@module-federation/enhanced/webpack');
+
+module.exports = {
+  plugins: [
+    new ModuleFederationPlugin({
+      name: 'myApp',
+      remotes: {
+        '@myorg/header': '@myorg/header@https://catalog.example.com/api/assets/container/@myorg/header/versions/1.0.0/remoteEntry.js',
+      },
+      shared: {
+        react: { singleton: true },
+        'react-dom': { singleton: true },
+      },
+    }),
+  ],
+};
+```
+
+### Rspack
+
+```bash
+npm install @module-federation/enhanced
+```
+
+```js
+// rspack.config.js
+const { ModuleFederationPlugin } = require('@module-federation/enhanced/rspack');
+
+module.exports = {
+  plugins: [
+    new ModuleFederationPlugin({
+      name: 'myApp',
+      remotes: {
+        '@myorg/header': '@myorg/header@https://catalog.example.com/api/assets/container/@myorg/header/versions/1.0.0/remoteEntry.js',
+      },
+      shared: {
+        react: { singleton: true },
+        'react-dom': { singleton: true },
+      },
+    }),
+  ],
+};
+```
+
+### Rsbuild
+
+```bash
+npm install @module-federation/rsbuild-plugin
+```
+
+```js
+// rsbuild.config.ts
+import { pluginModuleFederation } from '@module-federation/rsbuild-plugin';
+
+export default {
+  plugins: [
+    pluginModuleFederation({
+      name: 'myApp',
+      remotes: {
+        '@myorg/header': '@myorg/header@https://catalog.example.com/api/assets/container/@myorg/header/versions/1.0.0/remoteEntry.js',
+      },
+      shared: {
+        react: { singleton: true },
+        'react-dom': { singleton: true },
+      },
+    }),
+  ],
+};
+```
+
+### Vite
+
+```bash
+npm install @module-federation/vite
+```
+
+```js
+// vite.config.ts
+import { federation } from '@module-federation/vite';
+
+export default {
+  plugins: [
+    federation({
+      name: 'myApp',
+      remotes: {
+        '@myorg/header': '@myorg/header@https://catalog.example.com/api/assets/container/@myorg/header/versions/1.0.0/remoteEntry.js',
+      },
+      shared: {
+        react: { singleton: true },
+        'react-dom': { singleton: true },
+      },
+    }),
+  ],
+};
+```
+
+### Importing Exposed Modules (Build-Time)
+
+With build-time configuration, you can import remote modules directly:
+
+```js
+import Button from '@myorg/header/Button';
+import { formatDate } from '@myorg/utils/helpers';
+```
+
+## Choosing Between Approaches
+
+| Consideration | Runtime | Build-Time |
+|---|---|---|
+| **Version flexibility** | Resolve versions dynamically at runtime | Version URL fixed at build time |
+| **Build dependencies** | No build-time dependency on the remote | Remote must be available during build |
+| **Type safety** | Requires manual type definitions | Can integrate with remote types |
+| **Loading behavior** | Explicit async loading with loading states | Transparent imports, lazy-loaded chunks |
+| **Use case** | Plugin systems, dynamic remotes, A/B testing | Stable dependencies with known versions |
+
+Both approaches can be combined in the same application. Use build-time for stable, well-known dependencies and runtime for dynamic or optional modules.

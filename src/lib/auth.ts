@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import EntraIDProvider from "next-auth/providers/microsoft-entra-id";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 
@@ -19,19 +20,25 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         },
         {
           databaseName: env.mongodbDb,
-        }
+        },
       ),
   providers: [
-    EntraIDProvider({
-      clientId: env.azureAdClientId,
-      clientSecret: env.azureAdClientSecret,
-      issuer: `https://login.microsoftonline.com/${env.azureAdTenantId}/v2.0`,
-      authorization: {
-        params: {
-          scope: "openid profile email User.Read",
-        },
-      },
-    }),
+    env.useMocks
+      ? CredentialsProvider({
+          async authorize() {
+            return { id: "1", email: "test@test.com", isAdmin: true };
+          },
+        })
+      : EntraIDProvider({
+          clientId: env.azureAdClientId,
+          clientSecret: env.azureAdClientSecret,
+          issuer: `https://login.microsoftonline.com/${env.azureAdTenantId}/v2.0`,
+          authorization: {
+            params: {
+              scope: "openid profile email User.Read",
+            },
+          },
+        }),
   ],
   callbacks: {
     async session({ session, token }) {

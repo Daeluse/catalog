@@ -1,0 +1,52 @@
+# Getting Started
+
+The Module Federation Catalog is a centralized registry for publishing, discovering, and consuming Module Federation 2.0 modules. It provides a web interface and REST API for managing federated modules across your organization.
+
+## Key Concepts
+
+- **Module** — A registered package in the catalog that exposes functionality via Module Federation. Each module has a unique name (e.g. `@myorg/header`), an owner, and one or more published versions.
+- **Version** — A specific release of a module, identified by a semantic version string. Each version contains federation metadata, build artifacts (remote entry, manifest), and asset files.
+- **Application** — A consuming app that registers its allowed CORS origins. Applications request subscriptions to modules they want to consume.
+- **Subscription** — An access request linking an application to a module. Subscriptions follow an approval workflow: pending, approved, rejected, or revoked.
+- **API Token** — A bearer token for programmatic access to the catalog API, scoped to a user account with configurable expiration.
+
+## Signing In
+
+The catalog uses Azure AD (Microsoft Entra ID) for authentication. Click **Sign In** on the homepage to authenticate with your organizational account. Once signed in, you gain access to the dashboard where you can manage modules, applications, subscriptions, and API tokens.
+
+## Navigating the Catalog
+
+### Homepage
+
+The homepage displays all published modules in a searchable grid. You can:
+
+- **Search** by module name, display name, description, or keywords
+- **Filter** by category (Navigation, UI Components, Shared Libraries, Features, Utilities, Other)
+- **Sort** by recently updated, most downloads, or name
+
+### Module Detail Page
+
+Click any module card to view its detail page, which includes:
+
+- Module description and keywords
+- Installation guides for runtime and build-time consumption
+- Version history with the ability to browse individual versions
+- Sidebar with download stats, organization info, and links
+
+### Dashboard
+
+The dashboard is your management hub. From here you can:
+
+- **Modules** — Create new modules, edit metadata, publish versions, manage maintainers
+- **Applications** — Register consuming applications with their CORS origins
+- **Subscriptions** — View and manage subscription requests for your modules
+- **API Tokens** — Generate tokens for CI/CD pipelines and programmatic access
+
+## What's Next
+
+- [Publishing Modules](/documentation/publishing-modules) — Register a module and publish your first version
+- [Consuming Modules](/documentation/consuming-modules) — Integrate a federated module into your application
+- [Applications & Subscriptions](/documentation/applications-and-subscriptions) — Set up CORS access for your consuming apps
+- [Version Management](/documentation/version-management) — Understand versioning, tags, and resolution
+- [API Reference](/documentation/api-reference) — Use the REST API for automation
+- [API Tokens](/documentation/api-tokens) — Set up programmatic access

@@ -1,0 +1,147 @@
+# Version Management
+
+The catalog uses semantic versioning (semver) for all module versions. This page covers versioning rules, pre-release versions, version tag resolution, and strategies for managing module releases.
+
+## Semantic Versioning
+
+All versions must be valid semver strings. The format is:
+
+```
+MAJOR.MINOR.PATCH[-PRERELEASE]
+```
+
+Examples of valid versions:
+
+- `1.0.0` — Stable release
+- `2.3.1` — Patch release
+- `1.0.0-alpha.1` — Pre-release
+- `3.0.0-beta.2` — Pre-release
+- `1.2.0-rc.1` — Release candidate
+
+### Version Ordering
+
+Versions are ordered according to semver precedence rules. When listing versions, the catalog sorts them from newest to oldest. Pre-release versions sort lower than their corresponding release (e.g. `1.0.0-alpha.1` < `1.0.0`).
+
+### Pre-Release Versions
+
+Any version containing a hyphenated pre-release identifier (e.g. `-alpha`, `-beta`, `-rc`) is automatically flagged as a pre-release. Pre-release versions:
+
+- Are **excluded** from `latest` tag resolution
+- Are **included** in `next` tag resolution
+- Appear in the version list with a pre-release indicator
+- Can be resolved by exact version or semver range
+
+## Version Tag Resolution
+
+The catalog provides a tag resolution API that maps version tags to specific version records. This lets consuming applications load modules by tag rather than hardcoded version URLs.
+
+### Endpoint
+
+```
+GET /api/modules/{moduleName}/resolve/{tag}
+```
+
+### Supported Tags
+
+| Tag | Resolves To | Example |
+|---|---|---|
+| `latest` | Highest stable version (excludes pre-releases) | `1.2.3` |
+| `next` | Highest version including pre-releases | `2.0.0-beta.1` |
+| `1.2.3` | Exact version match | `1.2.3` |
+| `^1.0.0` | Highest version compatible with 1.x.x | `1.9.2` |
+| `~2.1.0` | Highest version matching 2.1.x | `2.1.7` |
+
+### Response Format
+
+```json
+{
+  "tag": "latest",
+  "resolvedVersion": "1.2.3",
+  "remoteEntry": "https://catalog.example.com/api/assets/container/@myorg/header/versions/1.2.3/remoteEntry.js",
+  "manifestUrl": "https://catalog.example.com/api/assets/container/@myorg/header/versions/1.2.3/mf-manifest.json",
+  "buildTool": "webpack",
+  "metadata": {
+    "federation": {
+      "name": "@myorg/header",
+      "entry": "remoteEntry.js",
+      "exposes": ["./Button", "./Nav"]
+    },
+    "isPrerelease": false,
+    "publishedAt": "2025-03-15T10:30:00.000Z"
+  }
+}
+```
+
+### Error Cases
+
+- **404** — No versions published, no stable versions for `latest`, or no matching version for the given tag/range
+- **400** — Invalid semver range syntax
+
+## Using Tag Resolution at Runtime
+
+Combine tag resolution with the Module Federation runtime for dynamic version loading:
+
+```js
+import { init, loadRemote } from '@module-federation/enhanced/runtime';
+
+init({ name: 'myApp', remotes: [] });
+
+// Resolve the latest stable version
+const res = await fetch('/api/modules/@myorg/header/resolve/latest');
+const { remoteEntry, resolvedVersion } = await res.json();
+
+console.log(`Loading @myorg/header@${resolvedVersion}`);
+
+const remote = await loadRemote('@myorg/header', {
+  entry: remoteEntry,
+});
+```
+
+### Using Semver Ranges
+
+Semver ranges let you pin to a compatible version range while automatically picking up patch or minor updates:
+
+```js
+// Load any 1.x.x version (caret range)
+const res = await fetch('/api/modules/@myorg/header/resolve/^1.0.0');
+
+// Load any 2.1.x version (tilde range)
+const res = await fetch('/api/modules/@myorg/header/resolve/~2.1.0');
+```
+
+## Deprecating a Version
+
+Individual versions can be deprecated without removing them. Deprecated versions:
+
+- Remain accessible by exact version
+- Are excluded from tag resolution
+- Display a deprecation notice on the module detail page
+
+## Release Strategies
+
+### Stable Releases
+
+For production-ready releases, publish versions without pre-release identifiers. These are picked up by the `latest` tag and semver range resolution.
+
+```
+1.0.0 → 1.0.1 → 1.1.0 → 2.0.0
+```
+
+### Pre-Release Channels
+
+Use pre-release identifiers to publish beta or release candidate versions that consuming teams can opt into:
+
+```
+2.0.0-alpha.1 → 2.0.0-alpha.2 → 2.0.0-beta.1 → 2.0.0-rc.1 → 2.0.0
+```
+
+Consumers using the `latest` tag are unaffected by pre-releases. Consumers who want early access can use the `next` tag or specify the exact pre-release version.
+
+### Coordinated Upgrades
+
+When publishing a breaking major version:
+
+1. Publish a pre-release (e.g. `2.0.0-beta.1`) so consuming teams can test
+2. Consuming teams can resolve with `next` or the exact pre-release version
+3. Once validated, publish the stable `2.0.0` release
+4. The `latest` tag automatically resolves to the new major version

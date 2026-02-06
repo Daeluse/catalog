@@ -37,7 +37,9 @@ export default function DashboardPage() {
     setDeleting(true);
     setDeleteError("");
     try {
-      await apiDelete(`/api/modules/${deleteConfirm.module.name}`);
+      await apiDelete(
+        `/api/modules/${encodeURIComponent(deleteConfirm.module.name)}`,
+      );
       await refetch();
       setDeleteConfirm({ isOpen: false, module: null });
     } catch (error) {
@@ -156,7 +158,7 @@ export default function DashboardPage() {
                     <div className="ml-4 flex gap-2">
                       <Button
                         as={Link}
-                        href={`/modules/${module.name}`}
+                        href={`/modules/${encodeURIComponent(module.name)}`}
                         variant="secondary"
                         size="sm"
                       >
@@ -164,7 +166,7 @@ export default function DashboardPage() {
                       </Button>
                       <Button
                         as={Link}
-                        href={`/dashboard/modules/${module.name}/edit`}
+                        href={`/dashboard/modules/${encodeURIComponent(module.name)}/edit`}
                         size="sm"
                       >
                         Edit

@@ -14,7 +14,7 @@ import { ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/Button";
 
-export function Header() {
+export function Header({ provider }: { provider: string }) {
   const { data: session, status } = useSession();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -29,13 +29,15 @@ export function Header() {
           </div>
 
           <nav className="flex items-center space-x-4">
-            { status === "loading" ? (
+            {status === "loading" ? (
               <div className="h-8 w-20 animate-pulse rounded bg-zinc-200" />
             ) : session ? (
               <>
                 <div>
                   <p className="cursor-pointer hover:border-b">
-                    <Link href="/documentation/producers">Get started</Link>
+                    <Link href="/documentation/getting-started">
+                      Get started
+                    </Link>
                   </p>
                 </div>
 
@@ -70,9 +72,7 @@ export function Header() {
                           href: "/dashboard/api-tokens",
                         },
                       ].map((menuItem) => (
-                        <DropdownMenuItem
-                          key={menuItem.label}
-                        >
+                        <DropdownMenuItem key={menuItem.label}>
                           <p className="hover:bg-zinc-200 p-1">
                             <Link
                               href={menuItem.href}
@@ -96,14 +96,12 @@ export function Header() {
               </>
             ) : (
               <Button
-                onClick={() =>
-                  signIn("microsoft-entra-id", { redirectTo: "/" })
-                }
+                onClick={() => signIn(provider, { redirectTo: "/" })}
                 size="sm"
               >
                 Sign in
               </Button>
-            ) }
+            )}
           </nav>
         </div>
       </div>
