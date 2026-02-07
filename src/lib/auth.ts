@@ -26,7 +26,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     env.useMocks
       ? CredentialsProvider({
           async authorize() {
-            return { id: "1", email: "test@test.com", isAdmin: true };
+            return { id: "test-user-id", email: "test@example.com", isAdmin: true };
           },
         })
       : EntraIDProvider({

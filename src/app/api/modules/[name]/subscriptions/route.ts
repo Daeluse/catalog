@@ -5,6 +5,7 @@ import { getPaginationParams } from "@/lib/pagination";
 import { canApproveSubscription } from "@/lib/permissions";
 import {
   successResponse,
+  errorResponse,
   forbiddenResponse,
   notFoundResponse,
   serverErrorResponse,
@@ -27,6 +28,11 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const { limit, skip } = getPaginationParams(searchParams, { limit: 50 });
+
+    const validStatuses = ["pending", "approved", "rejected", "revoked"];
+    if (status && !validStatuses.includes(status)) {
+      return errorResponse("Invalid status filter");
+    }
 
     // Get module
     const moduleDoc = await db.modules.findOne({ name });

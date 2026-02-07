@@ -1,5 +1,5 @@
 import { SubscriptionStatus } from "@/lib/constants";
-import { IApplication, IModule, ISubscription } from "@/models";
+import { IApplication, IModule, INotification, ISubscription } from "@/models";
 
 // Shared user/owner types
 export interface Owner {
@@ -55,6 +55,14 @@ export interface ModuleFilters {
 export interface SubscriptionFilters {
   status?: SubscriptionStatus;
   moduleId?: string;
+  limit?: number;
+  skip?: number;
+}
+
+export interface NotificationsResponse {
+  notifications: (INotification & { _id: string })[];
+  unreadCount: number;
+  total: number;
   limit?: number;
   skip?: number;
 }

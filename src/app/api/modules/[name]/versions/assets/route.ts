@@ -43,10 +43,23 @@ export async function POST(
     const storage = getBlobStorageService();
     const uploadedAssets: Asset[] = [];
 
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
     // Upload each file with its relative path
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const relativePath = paths[i] || file.name;
+
+      // Reject path traversal
+      if (relativePath.includes("..") || relativePath.startsWith("/")) {
+        return errorResponse(`Invalid file path: ${file.name}`);
+      }
+
+      // Reject oversized files
+      if (file.size > MAX_FILE_SIZE) {
+        return errorResponse(`File ${file.name} exceeds the 50MB size limit`);
+      }
+
       // Store files with their folder structure: moduleName/versions/version/relativePath
       const blobPath = `${moduleName}/versions/${version}/${relativePath}`;
       const buffer = await file.arrayBuffer();

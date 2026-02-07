@@ -21,11 +21,13 @@ import {
   Application,
   Subscription,
   ApiToken,
+  Notification,
   IModule,
   IVersion,
   IApplication,
   ISubscription,
   IApiToken,
+  INotification,
 } from "@/models";
 
 /**
@@ -145,6 +147,24 @@ class CollectionAdapter<T> {
     }
   }
 
+  async updateMany(
+    query: MongoQuery,
+    update: MongoUpdate<T>,
+  ): Promise<UpdateResult> {
+    if (env.useMocks) {
+      const collection = this.getMockCollection();
+      return await collection.updateMany(query, update);
+    } else {
+      if (!this.model) throw new Error("Mongoose model not provided");
+      await connectDB();
+      const result = await this.model.updateMany(query, update);
+      return {
+        modifiedCount: result.modifiedCount,
+        matchedCount: result.matchedCount,
+      };
+    }
+  }
+
   async deleteOne(query: MongoQuery): Promise<DeleteResult> {
     if (env.useMocks) {
       const collection = this.getMockCollection();
@@ -184,6 +204,10 @@ export const db = {
     Subscription,
   ),
   apiTokens: new CollectionAdapter<IApiToken>("apitokens", ApiToken),
+  notifications: new CollectionAdapter<INotification>(
+    "notifications",
+    Notification,
+  ),
 };
 
 /**
@@ -195,7 +219,8 @@ export async function findById<T>(
     | "versions"
     | "applications"
     | "subscriptions"
-    | "apitokens",
+    | "apitokens"
+    | "notifications",
   id: string,
 ): Promise<T | null> {
   if (env.useMocks) {
@@ -210,6 +235,7 @@ export async function findById<T>(
       applications: Application,
       subscriptions: Subscription,
       apitokens: ApiToken,
+      notifications: Notification,
     };
     const model = models[collectionName];
     const result = await model.findById(id);

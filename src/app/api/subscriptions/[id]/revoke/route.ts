@@ -4,11 +4,13 @@ import { db, findById } from "@/lib/db-adapter";
 import { canApproveSubscription } from "@/lib/permissions";
 import {
   successResponse,
+  errorResponse,
   forbiddenResponse,
   notFoundResponse,
   serverErrorResponse,
 } from "@/lib/api-responses";
 import { IModule, ISubscription } from "@/models";
+import { notifyUser } from "@/lib/notifications";
 
 // PATCH /api/subscriptions/[id]/revoke - Revoke subscription
 export async function PATCH(
@@ -29,6 +31,10 @@ export async function PATCH(
 
     if (!subscription) {
       return notFoundResponse("Subscription");
+    }
+
+    if (subscription.status !== "approved") {
+      return errorResponse("Subscription is not approved", 409);
     }
 
     // Get module to check permissions
@@ -61,6 +67,18 @@ export async function PATCH(
     }
 
     await db.subscriptions.updateOne({ _id: id }, { $set: updates });
+
+    // Notify the requester about the revocation
+    notifyUser(subscription.requestedBy.userId, {
+      type: "subscription_revoked",
+      title: "Subscription revoked",
+      message: `Your access to ${subscription.moduleName} was revoked`,
+      link: "/dashboard/subscriptions",
+      metadata: {
+        subscriptionId: id,
+        moduleName: subscription.moduleName,
+      },
+    });
 
     const updatedSubscription = await findById<ISubscription>(
       "subscriptions",

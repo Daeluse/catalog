@@ -13,6 +13,7 @@ import { useSession, signOut, signIn } from "next-auth/react";
 import { ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/Button";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export function Header({ provider }: { provider: string }) {
   const { data: session, status } = useSession();
@@ -41,6 +42,8 @@ export function Header({ provider }: { provider: string }) {
                   </p>
                 </div>
 
+                <NotificationBell />
+
                 <DropdownMenu
                   open={userMenuOpen}
                   onOpenChange={() => setUserMenuOpen(!userMenuOpen)}
@@ -59,6 +62,10 @@ export function Header({ provider }: { provider: string }) {
                     >
                       {[
                         { label: "Dashboard", href: "/dashboard" },
+                        {
+                          label: "Notifications",
+                          href: "/dashboard/notifications",
+                        },
                         {
                           label: "Applications",
                           href: "/dashboard/applications",

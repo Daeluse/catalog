@@ -172,6 +172,14 @@ export default function DashboardPage() {
                         Edit
                       </Button>
                       <Button
+                        as={Link}
+                        href={`/dashboard/modules/${encodeURIComponent(module.name)}/subscriptions`}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        Subscriptions
+                      </Button>
+                      <Button
                         onClick={() =>
                           setDeleteConfirm({ isOpen: true, module })
                         }

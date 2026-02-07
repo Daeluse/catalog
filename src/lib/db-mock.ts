@@ -180,6 +180,30 @@ class MockCollection<T = Record<string, unknown>> {
     return { modifiedCount: 0 };
   }
 
+  async updateMany(
+    query: MongoQuery,
+    update: MongoUpdate<T>,
+  ): Promise<UpdateResult> {
+    await this.db.waitForInit();
+    let matchedCount = 0;
+    let modifiedCount = 0;
+    for (const [id, item] of this.items.entries()) {
+      if (this.matches(item, query)) {
+        matchedCount++;
+        const updated = this.applyUpdate(item, update);
+        updated.updatedAt = new Date();
+        this.items.set(id, updated);
+        modifiedCount++;
+      }
+    }
+    if (modifiedCount > 0) {
+      await (
+        this.db as unknown as { saveToDisk: (name: string) => Promise<void> }
+      ).saveToDisk(this.name);
+    }
+    return { modifiedCount, matchedCount };
+  }
+
   async deleteOne(query: MongoQuery): Promise<DeleteResult> {
     await this.db.waitForInit();
     for (const [id, item] of this.items.entries()) {

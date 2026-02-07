@@ -14,6 +14,7 @@ import { requireAuth, isAuthError } from "@/lib/with-auth";
 import { db, findById } from "@/lib/db-adapter";
 import { getPaginationParams } from "@/lib/pagination";
 import { IApplication, IModule } from "@/models";
+import { notifyModuleApprovers } from "@/lib/notifications";
 
 // GET /api/subscriptions - List user's subscriptions (authenticated)
 export async function GET(request: NextRequest) {
@@ -27,6 +28,11 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const moduleId = searchParams.get("moduleId");
     const pagination = getPaginationParams(searchParams, { limit: 50 });
+
+    const validStatuses = ["pending", "approved", "rejected", "revoked"];
+    if (status && !validStatuses.includes(status)) {
+      return errorResponse("Invalid status filter");
+    }
 
     // First, get user's applications
     const userApplications = await db.applications.find({
@@ -158,6 +164,19 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await db.subscriptions.insertOne(newSubscription);
+
+    // Notify module approvers about the new subscription request
+    notifyModuleApprovers(moduleDoc as IModule & { _id: string }, {
+      type: "subscription_requested",
+      title: "New subscription request",
+      message: `${application.name} requested access to ${moduleDoc.name}`,
+      link: `/dashboard/modules/${encodeURIComponent(moduleDoc.name)}/subscriptions`,
+      metadata: {
+        subscriptionId: result.insertedId,
+        moduleName: moduleDoc.name,
+        applicationName: application.name,
+      },
+    });
 
     return createdResponse({
       ...newSubscription,

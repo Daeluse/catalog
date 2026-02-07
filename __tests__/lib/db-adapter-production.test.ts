@@ -327,6 +327,7 @@ describe("db-adapter (production mode)", () => {
         Application: {},
         Subscription: {},
         ApiToken: {},
+        Notification: {},
       }));
 
       vi.doMock("../../src/lib/db", () => ({
@@ -356,6 +357,7 @@ describe("db-adapter (production mode)", () => {
         Application: {},
         Subscription: {},
         ApiToken: {},
+        Notification: {},
       }));
 
       vi.doMock("../../src/lib/db", () => ({
@@ -385,6 +387,7 @@ describe("db-adapter (production mode)", () => {
         Application: {},
         Subscription: {},
         ApiToken: {},
+        Notification: {},
       }));
 
       vi.doMock("../../src/lib/db", () => ({

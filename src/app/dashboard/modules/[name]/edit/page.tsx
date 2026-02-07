@@ -249,6 +249,13 @@ export default function EditModulePage() {
             <div className="flex gap-4">
               <Button
                 as={Link}
+                href={`/dashboard/modules/${moduleName}/subscriptions`}
+                variant="secondary"
+              >
+                Manage Subscriptions
+              </Button>
+              <Button
+                as={Link}
                 href={`/dashboard/modules/${moduleName}/publish`}
                 variant="secondary"
               >

@@ -3,9 +3,11 @@ export { Version } from "./Version";
 export { Application } from "./Application";
 export { Subscription } from "./Subscription";
 export { ApiToken } from "./ApiToken";
+export { Notification } from "./Notification";
 
 export type { IModule } from "./Module";
 export type { IVersion } from "./Version";
 export type { IApplication } from "./Application";
 export type { ISubscription } from "./Subscription";
 export type { IApiToken } from "./ApiToken";
+export type { INotification } from "./Notification";

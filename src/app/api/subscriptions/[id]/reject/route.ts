@@ -4,12 +4,14 @@ import { db, findById } from "@/lib/db-adapter";
 import { canApproveSubscription } from "@/lib/permissions";
 import {
   successResponse,
+  errorResponse,
   forbiddenResponse,
   notFoundResponse,
   serverErrorResponse,
 } from "@/lib/api-responses";
 import { SubscriptionUpdates } from "@/types/database";
 import { IModule, ISubscription } from "@/models";
+import { notifyUser } from "@/lib/notifications";
 
 // PATCH /api/subscriptions/[id]/reject - Reject subscription request
 export async function PATCH(
@@ -30,6 +32,10 @@ export async function PATCH(
 
     if (!subscription) {
       return notFoundResponse("Subscription");
+    }
+
+    if (subscription.status !== "pending") {
+      return errorResponse("Subscription is not pending", 409);
     }
 
     // Get module to check permissions
@@ -62,6 +68,18 @@ export async function PATCH(
     }
 
     await db.subscriptions.updateOne({ _id: id }, { $set: updates });
+
+    // Notify the requester about the rejection
+    notifyUser(subscription.requestedBy.userId, {
+      type: "subscription_rejected",
+      title: "Subscription rejected",
+      message: `Your request for ${subscription.moduleName} was rejected`,
+      link: "/dashboard/subscriptions",
+      metadata: {
+        subscriptionId: id,
+        moduleName: subscription.moduleName,
+      },
+    });
 
     const updatedSubscription = await findById<ISubscription>(
       "subscriptions",

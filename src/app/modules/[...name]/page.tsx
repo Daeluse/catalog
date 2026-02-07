@@ -16,6 +16,7 @@ import { apiDelete } from "@/lib/api-client";
 import { formatDate } from "@/lib/utils";
 import type { PaginatedResponse } from "@/types/api";
 import { IModule, IVersion } from "@/models";
+import { QuickSubscribe } from "@/components/QuickSubscribe";
 
 export default function ModuleDetailPage() {
   const params = useParams();
@@ -252,6 +253,16 @@ export default function ModuleDetailPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Subscriptions */}
+            <Card className="p-6">
+              <h3 className="mb-4 font-semibold text-zinc-900">
+                Quick Subscribe
+              </h3>
+              <div className="space-y-3">
+                <QuickSubscribe module={module}></QuickSubscribe>
+              </div>
+            </Card>
+
             {/* Stats */}
             <Card className="p-6">
               <h3 className="mb-4 font-semibold text-zinc-900">Statistics</h3>

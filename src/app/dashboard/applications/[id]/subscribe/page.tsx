@@ -6,23 +6,21 @@ import Link from "next/link";
 import { ArrowLeft, Package, Search } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
-import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { EmptyState } from "@/components/EmptyState";
 import { SubscriptionStatusBadge } from "@/components/SubscriptionStatusBadge";
+import { SubscriptionAction } from "@/components/SubscriptionAction";
 import { Badge } from "@/components/Badge";
 import { useFetch } from "@/hooks/useFetch";
-import { apiPost } from "@/lib/api-client";
+import { useSubscription } from "@/hooks/useSubscription";
 import type { PaginatedResponse } from "@/types/api";
-import { IApplication, IModule, ISubscription } from "@/models";
+import { IApplication, IModule } from "@/models";
 
 export default function SubscribeToModulesPage() {
   const params = useParams();
   const id = params.id as string;
 
   const [search, setSearch] = useState("");
-  const [subscribingTo, setSubscribingTo] = useState<string | null>(null);
-  const [error, setError] = useState("");
 
   const { data: appData, loading: appLoading } = useFetch<IApplication>(
     `/api/applications/${id}`,
@@ -30,42 +28,16 @@ export default function SubscribeToModulesPage() {
   const { data: modulesData, loading: modulesLoading } = useFetch<
     PaginatedResponse<IModule>
   >("/api/modules?limit=100");
+
   const {
-    data: subsData,
     loading: subsLoading,
-    refetch: refetchSubscriptions,
-  } = useFetch<PaginatedResponse<ISubscription>>(
-    "/api/subscriptions?limit=100",
-  );
+    error,
+    subscribingTo,
+    getSubscription,
+    subscribe,
+  } = useSubscription({ applicationId: id });
 
   const loading = appLoading || modulesLoading || subsLoading;
-
-  const getSubscriptionStatus = (
-    moduleId: string,
-  ): ISubscription | undefined => {
-    return subsData?.subscriptions?.find(
-      (sub) =>
-        sub.moduleId === moduleId && sub.application?._id.toString() === id,
-    );
-  };
-
-  const handleSubscribe = async (moduleId: string) => {
-    try {
-      setSubscribingTo(moduleId);
-      setError("");
-
-      await apiPost("/api/subscriptions", {
-        applicationId: id,
-        moduleId,
-      });
-
-      await refetchSubscriptions();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setSubscribingTo(null);
-    }
-  };
 
   if (loading) {
     return <LoadingSpinner fullScreen message="Loading modules..." />;
@@ -128,12 +100,12 @@ export default function SubscribeToModulesPage() {
       ) : (
         <div className="space-y-4">
           {filteredModules.map((module) => {
-            const subscription = getSubscriptionStatus(module._id.toString());
-            const canSubscribe = !subscription;
+            const moduleId = module._id.toString();
+            const subscription = getSubscription(moduleId);
 
             return (
               <Card
-                key={module._id.toString()}
+                key={moduleId}
                 variant="outlined"
                 className="p-6"
               >
@@ -163,25 +135,12 @@ export default function SubscribeToModulesPage() {
                   </div>
 
                   <div className="ml-4">
-                    {canSubscribe ? (
-                      <Button
-                        onClick={() => handleSubscribe(module._id.toString())}
-                        disabled={subscribingTo === module._id.toString()}
-                        size="sm"
-                      >
-                        {subscribingTo === module._id.toString()
-                          ? "Requesting..."
-                          : "Subscribe"}
-                      </Button>
-                    ) : subscription?.status === "pending" ? (
-                      <p className="text-sm text-zinc-500">Awaiting approval</p>
-                    ) : subscription?.status === "approved" ? (
-                      <p className="text-sm text-green-600">Access granted</p>
-                    ) : subscription?.status === "rejected" ? (
-                      <p className="text-sm text-red-600">Request rejected</p>
-                    ) : (
-                      <p className="text-sm text-zinc-500">Access revoked</p>
-                    )}
+                    <SubscriptionAction
+                      moduleId={moduleId}
+                      subscription={subscription}
+                      subscribingTo={subscribingTo}
+                      onSubscribe={() => subscribe(moduleId)}
+                    />
                   </div>
                 </div>
               </Card>

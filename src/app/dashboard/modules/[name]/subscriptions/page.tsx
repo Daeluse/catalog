@@ -38,7 +38,7 @@ export default function ModuleSubscriptionsPage() {
     data: module,
     loading: moduleLoading,
     error: moduleError,
-  } = useFetch<IModule>(`/api/modules/${name}`);
+  } = useFetch<IModule>(`/api/modules/${encodeURIComponent(name)}`);
 
   const {
     data: subsData,
@@ -46,7 +46,7 @@ export default function ModuleSubscriptionsPage() {
     error: subsError,
     refetch,
   } = useFetch<PaginatedResponse<SubscriptionWithDetails>>(
-    `/api/modules/${name}/subscriptions?limit=100`,
+    `/api/modules/${encodeURIComponent(name)}/subscriptions?limit=100`,
   );
 
   const loading = moduleLoading || subsLoading;
