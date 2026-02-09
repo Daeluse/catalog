@@ -361,6 +361,117 @@ describe("GET /api/modules", () => {
     expect(data.modules[1].displayName).toBe("CCC");
   });
 
+  it("should filter modules by owner when owner=me with session auth", async () => {
+    mockAuth.mockResolvedValue({
+      user: {
+        id: "user-123",
+        email: "test@example.com",
+        name: "Test User",
+      },
+    } as any);
+
+    // Create modules with different owners
+    await db.modules.insertOne(
+      testData.createModule({
+        name: "@test/my-module",
+        displayName: "My Module",
+        status: "active",
+        owner: {
+          userId: "user-123",
+          email: "test@example.com",
+          name: "Test User",
+        },
+      }),
+    );
+    await db.modules.insertOne(
+      testData.createModule({
+        name: "@test/other-module",
+        displayName: "Other Module",
+        status: "active",
+        owner: {
+          userId: "other-user",
+          email: "other@example.com",
+          name: "Other User",
+        },
+      }),
+    );
+
+    const request = createMockRequest({
+      url: "http://localhost:3000/api/modules",
+      searchParams: { owner: "me" },
+    });
+
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.modules).toHaveLength(1);
+    expect(data.modules[0].name).toBe("@test/my-module");
+  });
+
+  it("should filter modules by owner when owner=me with token auth", async () => {
+    mockAuth.mockResolvedValue(null as any);
+    mockValidateApiToken.mockResolvedValue({
+      userId: "user-456",
+      userEmail: "token@example.com",
+      userName: "Token User",
+      tokenId: "token-123",
+    });
+
+    await db.modules.insertOne(
+      testData.createModule({
+        name: "@test/token-user-module",
+        displayName: "Token User Module",
+        status: "active",
+        owner: {
+          userId: "user-456",
+          email: "token@example.com",
+          name: "Token User",
+        },
+      }),
+    );
+    await db.modules.insertOne(
+      testData.createModule({
+        name: "@test/someone-else-module",
+        displayName: "Someone Else Module",
+        status: "active",
+        owner: {
+          userId: "someone-else",
+          email: "else@example.com",
+          name: "Someone Else",
+        },
+      }),
+    );
+
+    const request = createMockRequest({
+      url: "http://localhost:3000/api/modules",
+      searchParams: { owner: "me" },
+      headers: { Authorization: "Bearer valid-token" },
+    });
+
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.modules).toHaveLength(1);
+    expect(data.modules[0].name).toBe("@test/token-user-module");
+  });
+
+  it("should return 401 when owner=me without authentication", async () => {
+    mockAuth.mockResolvedValue(null as any);
+
+    const request = createMockRequest({
+      url: "http://localhost:3000/api/modules",
+      searchParams: { owner: "me" },
+    });
+
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(data.error).toBeDefined();
+  });
+
   it("should handle combined filters", async () => {
     await db.modules.insertOne(
       testData.createModule({

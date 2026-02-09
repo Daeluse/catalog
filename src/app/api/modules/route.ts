@@ -5,25 +5,36 @@ import {
   validationErrorResponse,
   conflictResponse,
   serverErrorResponse,
+  unauthorizedResponse,
 } from "@/lib/api-responses";
 import { validators, validationMessages } from "@/lib/validators";
-import { requireAuth, isAuthError } from "@/lib/with-auth";
+import { requireAuth, optionalAuth, isAuthError } from "@/lib/with-auth";
 import { db } from "@/lib/db-adapter";
 import { getPaginationParams } from "@/lib/pagination";
 import { MongoQuery } from "@/types/database";
 
-// GET /api/modules - List all modules (public)
+// GET /api/modules - List modules (public, or filtered by owner with ?owner=me)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
     const category = searchParams.get("category");
     const organization = searchParams.get("organization");
+    const owner = searchParams.get("owner");
     const sortParam = searchParams.get("sort") || "updated";
     const pagination = getPaginationParams(searchParams, { limit: 20 });
 
     // Build base query
     const query: MongoQuery = { status: "active" };
+
+    // Filter by current user's modules when owner=me
+    if (owner === "me") {
+      const { user } = await optionalAuth(request);
+      if (!user) {
+        return unauthorizedResponse("Authentication required to filter by owner");
+      }
+      query["owner.userId"] = user.id;
+    }
     if (category) query.category = category as string;
     if (organization) query.organization = organization;
 

@@ -28,7 +28,7 @@ export default function DashboardPage() {
   const [deleteError, setDeleteError] = useState("");
 
   const { data, loading, refetch } =
-    useFetch<PaginatedResponse<IModule>>("/api/modules");
+    useFetch<PaginatedResponse<IModule>>("/api/modules?owner=me");
   const modules = data?.modules || [];
 
   const handleDeleteModule = async () => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import Link from "next/link";
 import { Search, Package } from "lucide-react";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -60,8 +60,11 @@ export default function Home() {
               </>
             ) : (
               <>
-                <Button as={Link} href="/auth/signin" size="lg">
-                  Sign In
+                <Button
+                  onClick={() => signIn("microsoft-entra-id", { redirectTo: "/" })}
+                  size="sm"
+                >
+                  Sign in
                 </Button>
                 <Button
                   as={Link}
