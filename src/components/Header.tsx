@@ -37,7 +37,7 @@ export function Header({ provider }: { provider: string }) {
                 <div>
                   <p className="cursor-pointer hover:border-b">
                     <Link href="/documentation/getting-started">
-                      Get started
+                      Documentation
                     </Link>
                   </p>
                 </div>

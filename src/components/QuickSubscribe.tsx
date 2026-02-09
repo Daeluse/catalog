@@ -19,7 +19,6 @@ function ApplicationSelect({
   const {
     data: applicationsData,
     loading: applicationsLoading,
-    refetch: refetchApplications,
   } = useFetch<PaginatedResponse<IApplication>>(`/api/applications`);
 
   useEffect(() => {
@@ -90,7 +89,7 @@ function SubscribeButton({
 }
 
 export function QuickSubscribe({ module }: { module: IModule }) {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [application, setApplication] = useState<IApplication | undefined>();
 
   if (!status) return <></>;
