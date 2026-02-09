@@ -440,6 +440,66 @@ describe("GET /api/modules/[name]/resolve/[tag]", () => {
     ]);
   });
 
+  it("should include versionId in response", async () => {
+    const moduleData = await db.modules.insertOne(
+      testData.createModule({ name: "@test/module" }),
+    );
+
+    const version = await db.versions.insertOne(
+      testData.createVersion({
+        moduleName: "@test/module",
+        moduleId: moduleData.insertedId,
+        version: "1.0.0",
+      }) as any,
+    );
+
+    const request = createMockRequest({
+      url: "http://localhost:3000/api/modules/@test/module/resolve/latest",
+    });
+
+    const response = await GET(request, {
+      params: Promise.resolve({ name: "@test/module", tag: "latest" }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.versionId).toBe(version.insertedId);
+  });
+
+  it("should increment download counts when resolving a version", async () => {
+    const moduleData = await db.modules.insertOne(
+      testData.createModule({ name: "@test/module", totalDownloads: 0 }),
+    );
+
+    const version = await db.versions.insertOne(
+      testData.createVersion({
+        moduleName: "@test/module",
+        moduleId: moduleData.insertedId,
+        version: "1.0.0",
+        downloadCount: 0,
+      }) as any,
+    );
+
+    const request = createMockRequest({
+      url: "http://localhost:3000/api/modules/@test/module/resolve/latest",
+    });
+
+    const response = await GET(request, {
+      params: Promise.resolve({ name: "@test/module", tag: "latest" }),
+    });
+
+    expect(response.status).toBe(200);
+
+    // Wait for fire-and-forget recordDownload to complete
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const mod = await db.modules.findOne({ name: "@test/module" });
+    expect(mod!.totalDownloads).toBe(1);
+
+    const ver = await db.versions.findOne({ _id: version.insertedId });
+    expect(ver!.downloadCount).toBe(1);
+  });
+
   it("should include publishedAt in response", async () => {
     const moduleData = await db.modules.insertOne(
       testData.createModule({ name: "@test/module" }),

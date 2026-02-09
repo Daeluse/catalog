@@ -99,7 +99,7 @@ export function ModuleGuide({
               : "text-zinc-600 hover:text-zinc-900"
           }`}
         >
-          Build-Time Approach
+          Readme
         </button>
         <button
           onClick={() => setGettingStartedTab("runtime")}

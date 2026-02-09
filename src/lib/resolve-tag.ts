@@ -19,6 +19,7 @@ export async function resolveTag(
   name: string,
   tag: string,
 ): Promise<{
+  versionId: string;
   tag: string;
   resolvedVersion: string;
   remoteEntry: string;
@@ -109,6 +110,7 @@ export async function resolveTag(
 
   // Return the resolution result
   return {
+    versionId: selectedVersion._id,
     tag,
     resolvedVersion: selectedVersion.version,
     remoteEntry: selectedVersion.assets.remoteEntry.url,

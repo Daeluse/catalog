@@ -10,6 +10,7 @@ import {
   ResolveRequestError,
   resolveTag,
 } from "@/lib/resolve-tag";
+import { recordDownload } from "@/lib/download-tracker";
 
 // GET /api/modules/[name]/resolve/[tag] - Resolve version tag to remote entry URL
 export async function GET(
@@ -20,6 +21,9 @@ export async function GET(
     const { name, tag } = await params;
 
     const resolvedVersion = await resolveTag(name, tag);
+
+    // Fire-and-forget: track the download without adding latency
+    recordDownload(name, resolvedVersion.versionId);
 
     return successResponse(resolvedVersion);
   } catch (e) {
