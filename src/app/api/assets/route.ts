@@ -21,19 +21,19 @@ export async function GET(request: NextRequest) {
     const assets = filtered.map((blob) => {
       const parts = blob.name.split("/");
       // Expected pattern: {moduleName}/versions/{version}/{fileName}
-      let module: string | null = null;
+      let moduleName: string | null = null;
       let version: string | null = null;
 
       const versionsIndex = parts.indexOf("versions");
       if (versionsIndex > 0) {
-        module = parts.slice(0, versionsIndex).join("/");
+        moduleName = parts.slice(0, versionsIndex).join("/");
         version = parts[versionsIndex + 1] ?? null;
       }
 
       return {
         name: blob.name,
         size: blob.size,
-        module,
+        module: moduleName,
         version,
       };
     });

@@ -40,12 +40,6 @@ export default function AdminStoragePage() {
   const url = session?.user?.isAdmin ? "/api/assets" : null;
   const { data, loading, error } = useFetch<StorageResponse>(url);
 
-  // Redirect non-admins once session is loaded
-  if (sessionStatus !== "loading" && !session?.user?.isAdmin) {
-    router.replace("/dashboard");
-    return null;
-  }
-
   const filteredAssets = useMemo(() => {
     if (!data?.assets) return [];
     if (!search) return data.assets;
@@ -57,6 +51,12 @@ export default function AdminStoragePage() {
     () => filteredAssets.reduce((sum, a) => sum + a.size, 0),
     [filteredAssets],
   );
+
+  // Redirect non-admins once session is loaded
+  if (sessionStatus !== "loading" && !session?.user?.isAdmin) {
+    router.replace("/dashboard");
+    return null;
+  }
 
   if (sessionStatus === "loading" || loading) {
     return (
