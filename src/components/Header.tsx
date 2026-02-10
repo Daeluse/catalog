@@ -78,6 +78,14 @@ export function Header({ provider }: { provider: string }) {
                           label: "API Tokens",
                           href: "/dashboard/api-tokens",
                         },
+                        ...(session.user?.isAdmin
+                          ? [
+                              {
+                                label: "Storage",
+                                href: "/dashboard/admin",
+                              },
+                            ]
+                          : []),
                       ].map((menuItem) => (
                         <DropdownMenuItem key={menuItem.label}>
                           <p className="hover:bg-zinc-200 p-1">
