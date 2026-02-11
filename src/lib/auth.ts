@@ -1,35 +1,15 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import EntraIDProvider from "next-auth/providers/microsoft-entra-id";
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
 
 import { env } from "@/lib/env";
-import { MongoClient } from "mongodb";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   trustHost: true,
-  adapter: env.useMocks
-    ? undefined
-    : MongoDBAdapter(
-        () => {
-          if (!env.mongodbUri) {
-            throw new Error("MongoDB URI not provided");
-          }
-          const client = new MongoClient(env.mongodbUri, {});
-          return client.connect();
-        },
-        {
-          databaseName: env.mongodbDb,
-        },
-      ),
+  adapter: undefined,
   providers: [
-    env.useMocks
-      ? CredentialsProvider({
-          async authorize() {
-            return { id: "test-user-id", email: "test@example.com", isAdmin: true };
-          },
-        })
-      : EntraIDProvider({
+    env.nextAuthProvider === "microsoft-entra-id"
+      ? EntraIDProvider({
           clientId: env.azureAdClientId,
           clientSecret: env.azureAdClientSecret,
           issuer: `https://login.microsoftonline.com/${env.azureAdTenantId}/v2.0`,
@@ -38,7 +18,20 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
               scope: "openid profile email User.Read",
             },
           },
-        }),
+          async profile(profile) {
+           return {
+            id: profile.sub,
+            name: profile.name,
+            email: profile.email,
+            isAdmin: profile.roles.includes("Admin"),
+           };
+          }
+        })
+      : CredentialsProvider({
+          async authorize() {
+            return { id: "test-user-id", email: "test@example.com", isAdmin: true };
+          },
+        }), 
   ],
   callbacks: {
     async session({ session, token }) {

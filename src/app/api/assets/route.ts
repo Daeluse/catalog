@@ -1,7 +1,14 @@
 import { NextRequest } from "next/server";
-import { requireAdmin } from "@/lib/with-auth";
+import { isAuthError, requireAdmin } from "@/lib/with-auth";
 import { getBlobStorageService } from "@/lib/storage";
-import { successResponse, serverErrorResponse } from "@/lib/api-responses";
+import {
+  noContentResponse,
+  notFoundResponse,
+  successResponse,
+  serverErrorResponse,
+  validationErrorResponse,
+} from "@/lib/api-responses";
+import { validationMessages, validators } from "@/lib/validators";
 
 export async function GET(request: NextRequest) {
   const authResult = await requireAdmin(request);
@@ -42,5 +49,48 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error listing storage assets:", error);
     return serverErrorResponse("Failed to list storage assets");
+  }
+}
+
+// POST /api/assets - Delete a storage asset (admin only)
+export async function POST(request: NextRequest) {
+  const authResult = await requireAdmin(request);
+  if (isAuthError(authResult)) return authResult.error;
+
+  try {
+    const body = await request.json();
+    let { path } = body;
+
+    console.log("FOO");
+    console.log(body);
+    console.log(path);
+
+    // Validate required fields
+    const errors: Record<string, string> = {};
+    if (!validators.notEmpty(path || ""))
+      errors.name = validationMessages.notEmpty;
+
+    if (Object.keys(errors).length > 0) {
+      return validationErrorResponse(errors);
+    }
+
+    // Strip container name prefix if present (matching GET handler pattern)
+    const containerName =
+      process.env.AZURE_STORAGE_CONTAINER || "catalog-modules";
+    if (path.startsWith(`${containerName}/`)) {
+      path = path.substring(containerName.length + 1);
+    }
+
+    const storage = getBlobStorageService();
+    const deleted = await storage.deleteBlob(path);
+
+    if (!deleted) {
+      return notFoundResponse("Asset");
+    }
+
+    return noContentResponse();
+  } catch (error) {
+    console.error("Error deleting storage asset:", error);
+    return serverErrorResponse("Failed to delete storage asset");
   }
 }

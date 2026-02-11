@@ -81,7 +81,7 @@ export function Header({ provider }: { provider: string }) {
                         ...(session.user?.isAdmin
                           ? [
                               {
-                                label: "Storage",
+                                label: "Admin",
                                 href: "/dashboard/admin",
                               },
                             ]

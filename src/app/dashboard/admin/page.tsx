@@ -3,11 +3,13 @@
 import { useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { HardDrive, Search, FileBox } from "lucide-react";
+import { HardDrive, Search, FileBox, Trash2 } from "lucide-react";
 
 import { useFetch } from "@/hooks/useFetch";
+import { apiPost } from "@/lib/api-client";
 import { Card } from "@/components/Card";
 import { Badge } from "@/components/Badge";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { EmptyState } from "@/components/EmptyState";
@@ -36,9 +38,27 @@ export default function AdminStoragePage() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [deleteAsset, setDeleteAsset] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const url = session?.user?.isAdmin ? "/api/assets" : null;
-  const { data, loading, error } = useFetch<StorageResponse>(url);
+  const { data, loading, error, refetch } = useFetch<StorageResponse>(url);
+
+  const handleDelete = async () => {
+    if (!deleteAsset) return;
+    try {
+      setDeleting(true);
+      await apiPost(`/api/assets`, {
+        path: deleteAsset,
+      });
+      await refetch();
+    } catch {
+      // Error is handled by the refetch/UI
+    } finally {
+      setDeleting(false);
+      setDeleteAsset(null);
+    }
+  };
 
   const filteredAssets = useMemo(() => {
     if (!data?.assets) return [];
@@ -152,7 +172,16 @@ export default function AdminStoragePage() {
                     {asset.version && (
                       <Badge variant="default">v{asset.version}</Badge>
                     )}
-                    <Badge variant="success">{formatFileSize(asset.size)}</Badge>
+                    <Badge variant="success">
+                      {formatFileSize(asset.size)}
+                    </Badge>
+                    <button
+                      onClick={() => setDeleteAsset(asset.name)}
+                      className="ml-1 p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      title="Delete asset"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               </Card>
@@ -160,6 +189,17 @@ export default function AdminStoragePage() {
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteAsset !== null}
+        title="Delete Asset"
+        description={`Are you sure you want to delete "${deleteAsset}"? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDelete}
+        onClose={() => setDeleteAsset(null)}
+        confirmVariant="danger"
+        loading={deleting}
+      />
     </main>
   );
 }
