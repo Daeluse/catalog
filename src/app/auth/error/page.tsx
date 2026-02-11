@@ -20,7 +20,7 @@ function AuthErrorContent() {
     errorMessages[error || "Default"] || errorMessages.Default;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50">
+    <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-lg">
         <div className="text-center">
           <div className="mx-auto h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
@@ -62,7 +62,7 @@ export default function AuthErrorPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-zinc-50">
+        <div className="flex min-h-screen items-center justify-center">
           Loading...
         </div>
       }

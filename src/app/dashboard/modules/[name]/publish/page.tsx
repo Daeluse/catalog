@@ -208,7 +208,7 @@ export default function PublishVersionPage() {
 
   if (fetchError || !module) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-zinc-900">Module Not Found</h1>
           <p className="mt-2 text-zinc-600">
@@ -230,7 +230,7 @@ export default function PublishVersionPage() {
   // Don't render form if there's a permission error
   if (error && !hasPermission) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-zinc-900">Access Denied</h1>
           <p className="mt-2 text-zinc-600">{error}</p>
@@ -241,7 +241,7 @@ export default function PublishVersionPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-50">
+    <main className="min-h-screen">
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">

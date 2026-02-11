@@ -107,7 +107,7 @@ export default function ModuleDetailPage() {
 
   if (error || !module) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-zinc-900">Module Not Found</h1>
           <p className="mt-2 text-zinc-600">{error || "Module not found"}</p>
@@ -120,7 +120,7 @@ export default function ModuleDetailPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-50">
+    <main className="min-h-screen">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <nav className="mb-8 flex items-center gap-2 text-sm">
